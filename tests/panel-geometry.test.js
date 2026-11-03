@@ -12,8 +12,16 @@ assert(rectsOverlap(
 ), 'overlapping rects');
 assert(!rectsOverlap(
     {x: 0, y: 0, width: 100, height: 10},
+    {x: 0, y: 10, width: 100, height: 10}
+), 'bottom and top edges touching do not overlap');
+assert(!rectsOverlap(
+    {x: 0, y: 0, width: 100, height: 10},
+    {x: 100, y: 0, width: 10, height: 10}
+), 'right and left edges touching do not overlap');
+assert(!rectsOverlap(
+    {x: 0, y: 0, width: 100, height: 10},
     {x: 0, y: 11, width: 100, height: 10}
-), 'touching edges do not overlap');
+), 'gapped edges do not overlap');
 
 assertEqual(targetY(0, 36, true), -36, 'hidden panel moves above the monitor');
 assertEqual(targetY(0, 36, false), 0, 'visible panel returns to base');
@@ -30,6 +38,13 @@ assert(!shouldHidePanel({
     showInOverview: true,
     overlaps: true,
 }), 'always mode stays visible');
+assert(shouldHidePanel({
+    mode: 'always',
+    forcedHidden: true,
+    overviewVisible: false,
+    showInOverview: true,
+    overlaps: false,
+}), 'forced hidden hides the panel');
 assert(shouldHidePanel({
     mode: 'autohide',
     forcedHidden: false,
