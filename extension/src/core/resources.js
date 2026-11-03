@@ -107,12 +107,20 @@ export class ModuleScope {
         return this._signals.connect(target, signal, callback);
     }
 
+    disconnect(id) {
+        this._signals.disconnect(id);
+    }
+
     timeout(interval, callback, priority = GLib.PRIORITY_DEFAULT) {
         return this._sources.timeoutAdd(priority, interval, callback);
     }
 
     idle(callback, priority = GLib.PRIORITY_DEFAULT) {
         return this._sources.idleAdd(priority, callback);
+    }
+
+    removeSource(id) {
+        this._sources.remove(id);
     }
 
     destroy() {

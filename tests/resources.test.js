@@ -45,4 +45,27 @@ assertEqual(scope.sourceCount, 0, 'scope clears sources');
 emitter.emit('ping');
 assertEqual(count, 1, 'scope destroy disconnects');
 
+const scopedSignals = new ModuleScope('signal-disconnect');
+let scopedCount = 0;
+const scopedId = scopedSignals.signal(emitter, 'ping', () => scopedCount++);
+emitter.emit('ping');
+assertEqual(scopedCount, 1, 'scoped signal fires');
+scopedSignals.disconnect(scopedId);
+emitter.emit('ping');
+assertEqual(scopedCount, 1, 'scope disconnect removes the handler');
+assertEqual(scopedSignals.signalCount, 0, 'scope forgets the disconnected signal');
+scopedSignals.destroy();
+
+const scopedSources = new ModuleScope('source-remove');
+let removedSourceFired = false;
+const removedSourceId = scopedSources.timeout(20, () => {
+    removedSourceFired = true;
+    return GLib.SOURCE_REMOVE;
+});
+scopedSources.removeSource(removedSourceId);
+assertEqual(scopedSources.sourceCount, 0, 'scope forgets the removed source');
+waitForTimeout(50);
+assertEqual(removedSourceFired, false, 'scope removeSource cancels the timeout');
+scopedSources.destroy();
+
 print('resource tests passed');
