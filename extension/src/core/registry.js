@@ -1,3 +1,5 @@
+import {conflictDetail, findActiveConflicts} from './conflicts.js';
+
 export class ModuleRegistry {
     constructor(context) {
         this._context = context;
@@ -24,10 +26,18 @@ export class ModuleRegistry {
         const mode = this._context.currentMode;
 
         for (const {entry, scope} of [...this._enabled]) {
-            if (entry.sessionModes.includes(mode))
+            if (!entry.sessionModes.includes(mode)) {
+                this._disable(entry, scope);
+                this._enabled = this._enabled.filter(item => item.entry !== entry);
                 continue;
-            this._disable(entry, scope);
-            this._enabled = this._enabled.filter(item => item.entry !== entry);
+            }
+
+            const conflicts = this._conflicts(entry);
+            if (conflicts.length > 0) {
+                this._disable(entry, scope);
+                this._enabled = this._enabled.filter(item => item.entry !== entry);
+                this._context.diagnostics.setModule(entry.id, 'blocked', conflictDetail(conflicts));
+            }
         }
 
         for (const entry of this._entries) {
@@ -46,6 +56,13 @@ export class ModuleRegistry {
         if (entry.enabledKey &&
             !this._context.settings.get_boolean(entry.enabledKey)) {
             this._context.diagnostics.setModule(entry.id, 'disabled', 'settings');
+            return;
+        }
+
+        const conflicts = this._conflicts(entry);
+        if (conflicts.length > 0) {
+            this._context.diagnostics.setModule(entry.id, 'blocked', conflictDetail(conflicts));
+            this._context.logger.info(`${entry.id} blocked by ${conflictDetail(conflicts)}`);
             return;
         }
 
@@ -69,6 +86,13 @@ export class ModuleRegistry {
             this._context.diagnostics.setModule(entry.id, 'failed', error.message);
             this._context.releaseScope(scope);
         }
+    }
+
+    _conflicts(entry) {
+        if (!this._context.extensionManager)
+            return [];
+        return findActiveConflicts(entry.id, uuid =>
+            this._context.extensionManager.lookup(uuid));
     }
 
     _disable(entry, scope) {
