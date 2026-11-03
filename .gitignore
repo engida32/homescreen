@@ -1,2 +1,4 @@
 .worktrees/
 .superpowers/
+dist/
+extension/schemas/gschemas.compiled
