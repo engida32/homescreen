@@ -173,6 +173,52 @@
       <summary>Blur brightness</summary>
     </key>
 
+    <key name="tiling-enabled" type="b">
+      <default>false</default>
+      <summary>Enable keyboard tiling</summary>
+    </key>
+    <key name="tiling-gap" type="i">
+      <default>8</default>
+      <range min="0" max="32"/>
+      <summary>Gap between tiled windows and screen edges</summary>
+    </key>
+    <key name="tiling-half-left-shortcut" type="as">
+      <default><![CDATA[['<Super><Control>Left']]]></default>
+      <summary>Tile the focused window to the left half</summary>
+    </key>
+    <key name="tiling-half-right-shortcut" type="as">
+      <default><![CDATA[['<Super><Control>Right']]]></default>
+      <summary>Tile the focused window to the right half</summary>
+    </key>
+    <key name="tiling-half-top-shortcut" type="as">
+      <default><![CDATA[['<Super><Control>Up']]]></default>
+      <summary>Tile the focused window to the top half</summary>
+    </key>
+    <key name="tiling-half-bottom-shortcut" type="as">
+      <default><![CDATA[['<Super><Control>Down']]]></default>
+      <summary>Tile the focused window to the bottom half</summary>
+    </key>
+    <key name="tiling-quarter-top-left-shortcut" type="as">
+      <default><![CDATA[['<Super><Control><Alt>1']]]></default>
+      <summary>Tile the focused window to the top-left quarter</summary>
+    </key>
+    <key name="tiling-quarter-top-right-shortcut" type="as">
+      <default><![CDATA[['<Super><Control><Alt>2']]]></default>
+      <summary>Tile the focused window to the top-right quarter</summary>
+    </key>
+    <key name="tiling-quarter-bottom-left-shortcut" type="as">
+      <default><![CDATA[['<Super><Control><Alt>3']]]></default>
+      <summary>Tile the focused window to the bottom-left quarter</summary>
+    </key>
+    <key name="tiling-quarter-bottom-right-shortcut" type="as">
+      <default><![CDATA[['<Super><Control><Alt>4']]]></default>
+      <summary>Tile the focused window to the bottom-right quarter</summary>
+    </key>
+    <key name="tiling-full-shortcut" type="as">
+      <default><![CDATA[['<Super><Control><Alt>f']]]></default>
+      <summary>Tile the focused window to the full work area</summary>
+    </key>
+
     <key name="diagnostics-json" type="s">
       <default>'{}'</default>
       <summary>Last module status snapshot</summary>

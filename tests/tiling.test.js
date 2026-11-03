@@ -1,3 +1,5 @@
+import Gio from 'gi://Gio';
+
 import {LAYOUTS, TILING_SHORTCUTS, snapRect} from '../extension/src/modules/tiling/tilingGeometry.js';
 import {assert, assertEqual} from './helpers.js';
 
@@ -53,5 +55,17 @@ try {
     threw = true;
 }
 assert(threw, 'unknown layouts throw');
+
+const schema = Gio.SettingsSchemaSource.get_default()
+    .lookup('org.gnome.shell.extensions.homescreen', true);
+const settings = new Gio.Settings({settings_schema: schema});
+assertEqual(settings.get_boolean('tiling-enabled'), false, 'tiling starts off');
+assertEqual(settings.get_int('tiling-gap'), 8, 'tiling gap default');
+assertEqual(settings.get_strv('tiling-half-left-shortcut')[0], '<Super><Control>Left',
+    'half-left shortcut default');
+assertEqual(settings.get_strv('tiling-quarter-top-left-shortcut')[0],
+    '<Super><Control><Alt>1', 'quarter shortcut default');
+assertEqual(settings.get_strv('tiling-full-shortcut')[0], '<Super><Control><Alt>f',
+    'full shortcut default');
 
 print('tiling tests passed');

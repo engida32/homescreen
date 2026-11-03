@@ -8,6 +8,9 @@ import {assert, assertEqual} from './helpers.js';
 assertEqual(KNOWN_CONFLICTS.dock[0].uuid, 'ubuntu-dock@ubuntu.com',
     'Ubuntu Dock is the dock conflict');
 
+assertEqual(KNOWN_CONFLICTS.tiling[0].uuid, 'tiling-assistant@ubuntu.com',
+    'Tiling Assistant is the tiling conflict');
+
 const active = findActiveConflicts('dock', uuid => ({
     state: uuid === 'ubuntu-dock@ubuntu.com' ? 1 : 2,
 }));
