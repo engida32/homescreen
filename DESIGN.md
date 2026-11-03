@@ -1,6 +1,6 @@
 # Homescreen: Design and Roadmap
 
-Status: draft for review
+Status: Phase 1 implemented, live verification pending
 Date: 2026-11-03
 Target: Ubuntu 26.04, GNOME Shell 50.1, Wayland
 Scope: personal use, one machine
