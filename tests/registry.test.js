@@ -1,5 +1,4 @@
 import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
 
 import {Context} from '../extension/src/core/context.js';
 import {ModuleRegistry} from '../extension/src/core/registry.js';
@@ -46,22 +45,13 @@ const second = {
 registry.add('first', first, 'panel-enabled');
 registry.add('second', second, 'dock-enabled');
 
-const capturedErrors = [];
-GLib.log_set_writer_func((level, fields) => {
-    capturedErrors.push(new TextDecoder().decode(fields.MESSAGE));
-    return GLib.LogWriterOutput.HANDLED;
-});
-try {
-    registry.enableAll();
-} finally {
-    GLib.log_set_writer_default();
-}
+registry.enableAll();
 
 assertEqual(log.join(','), 'first-enable,second-enable', 'enable order and failure isolation');
 assertEqual(registry.status('first'), 'enabled', 'first is enabled');
 assertEqual(registry.status('second'), 'failed', 'second is failed');
 assert(context.snapshot().modules.second.detail.includes('boom'), 'failure is recorded');
-assert(capturedErrors.join('\n').includes('boom'), 'intentional failure is logged');
+assert(context.logger.entries().some(entry => entry.message.includes('boom')), 'intentional failure is logged');
 
 registry.disableAll();
 assertEqual(log[log.length - 1], 'first-disable', 'enabled modules disable in reverse order');
