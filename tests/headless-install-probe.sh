@@ -25,8 +25,10 @@ test -f "$PACK"
 gnome-extensions install --force "$PACK"
 
 test -f "$EXT_DIR/metadata.json"
-grep -q "$UUID" "$EXT_DIR/metadata.json"
+grep -Fq "$UUID" "$EXT_DIR/metadata.json"
 test -f "$EXT_DIR/extension.js"
+test -f "$EXT_DIR/LICENSE"
+test -f "$EXT_DIR/schemas/org.gnome.shell.extensions.homescreen.gschema.xml"
 
 rm -rf "$EXT_DIR"
 

@@ -10,6 +10,7 @@ pack: schemas
 	mkdir -p dist
 	gnome-extensions pack --force \
 		--extra-source=src \
+		--extra-source=LICENSE \
 		--schema=schemas/org.gnome.shell.extensions.homescreen.gschema.xml \
 		--out-dir=dist extension
 
