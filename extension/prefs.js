@@ -1,12 +1,16 @@
 import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
+import {buildDesktopPage} from './src/prefs/desktopPage.js';
+import {buildDockPage} from './src/prefs/dockPage.js';
 import {buildPanelPage} from './src/prefs/panelPage.js';
 
 export default class HomescreenPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
-        window.set_default_size(760, 620);
+        window.set_default_size(800, 680);
         window.set_title(_('Homescreen'));
         const settings = this.getSettings();
         buildPanelPage(window, settings);
+        buildDockPage(window, settings);
+        buildDesktopPage(window, settings);
     }
 }
