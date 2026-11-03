@@ -25,6 +25,8 @@ test: schemas
 	python3 scripts/validate-metadata.py
 	@for file in tests/*.test.js; do \
 		[ -e "$$file" ] || continue; \
+		GSETTINGS_SCHEMA_DIR="$(CURDIR)/extension/schemas" \
+		GSETTINGS_BACKEND=memory \
 		gjs -m "$$file"; \
 	done
 	@for file in extension/extension.js extension/prefs.js $$(find extension/src -name '*.js' -type f); do \
