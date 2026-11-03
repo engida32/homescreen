@@ -1,10 +1,14 @@
 import {
+    dockBounds,
     dockHeight,
     dockOrigin,
     dockWidth,
+    hiddenDockPosition,
     hiddenDockY,
+    pointerAtDockEdge,
     rectsOverlap,
     slotCenter,
+    slotCenterForAxis,
 } from '../extension/src/modules/dock/layout.js';
 import {assert, assertEqual} from './helpers.js';
 
@@ -35,5 +39,32 @@ assert(!rectsOverlap(
     {x: 0, y: 700, width: 1000, height: 100},
     {x: 100, y: 800, width: 200, height: 100}
 ), 'a window starting at the dock edge does not overlap');
+
+const leftMonitor = {x: 0, y: 0, width: 1000, height: 800};
+const left = dockBounds('left', leftMonitor, 3, 52, 8, 10, 10);
+assertEqual(left.x, 10, 'left dock starts at the left margin');
+assertEqual(left.width, 82, 'left dock thickness includes icon, padding, and indicator');
+assertEqual(left.height, 192, 'left dock length is three icons plus spacing');
+assertEqual(left.y, 304, 'left dock is vertically centered');
+
+const right = dockBounds('right', leftMonitor, 1, 52, 8, 10, 10);
+assertEqual(right.x, 908, 'right dock starts at the right edge minus width and margin');
+assertEqual(right.width, 82, 'right dock thickness is stable');
+assertEqual(right.y, 364, 'single icon is centered vertically');
+
+const hiddenLeft = hiddenDockPosition('left', leftMonitor, 10, left);
+assertEqual(hiddenLeft.x, -80, 'hidden left dock leaves a two pixel strip');
+assertEqual(hiddenLeft.y, 304, 'hidden left dock keeps its centered y');
+
+const hiddenRight = hiddenDockPosition('right', leftMonitor, 10, right);
+assertEqual(hiddenRight.x, 998, 'hidden right dock leaves a two pixel strip');
+
+assert(pointerAtDockEdge('left', leftMonitor, 1, 400), 'left edge is detected');
+assert(pointerAtDockEdge('right', leftMonitor, 999, 400), 'right edge is detected');
+assert(pointerAtDockEdge('bottom', leftMonitor, 500, 799), 'bottom edge is detected');
+assert(!pointerAtDockEdge('left', leftMonitor, 20, 400), 'inside the monitor is not the edge');
+
+assertEqual(slotCenterForAxis(0, 52, 8, 10, false), 36, 'horizontal slot');
+assertEqual(slotCenterForAxis(1, 52, 8, 10, true), 96, 'vertical slot');
 
 print('dock layout tests passed');
