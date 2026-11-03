@@ -1,6 +1,6 @@
 # Homescreen: Design and Roadmap
 
-Status: Phase 3 implemented, live verification pending
+Status: Phase 4 implemented, live verification pending
 Date: 2026-11-03
 Target: Ubuntu 26.04, GNOME Shell 50.1, Wayland
 Scope: personal use, one machine
@@ -123,7 +123,7 @@ Blur for panel, dock, and overview. Rounded panel and dock corners, opacity, sha
 
 ### Tiling
 
-Snap layouts, drag-to-snap preview, quarter and half layouts, gaps, keyboard shortcuts, and workspace-aware behavior. Disabled by default because Ubuntu Tiling Assistant is currently enabled. The conflict guard must resolve that first.
+Keyboard snap layouts for halves, quarters, and full-width windows with configurable gaps, applied to the focused normal window on its current monitor and workspace. Drag-to-snap preview and snap assist are deferred because Mutter's tile preview and window-drag pipeline are private. Disabled by default because Ubuntu Tiling Assistant is currently enabled. The conflict guard blocks the module while Tiling Assistant is active.
 
 ### System monitor
 
@@ -334,6 +334,8 @@ Phase 1 is the first usable milestone. The other modules are not allowed to dela
 
 Phase 3 implements panel and dock blur plus panel glass. Overview blur and Launchpad mode are deferred to Phase 5, where the app grid and overview are restructured. Motion presets remain deferred until they can be added without a second animation system.
 
+Phase 4 implements keyboard tiling for halves, quarters, and the full work area with configurable gaps. Drag-to-snap preview and snap assist are deferred because Mutter's tile preview and window-drag pipeline are private.
+
 ## Acceptance criteria
 
 - A clean logout and login shows the dock and panel in the expected state.
@@ -343,6 +345,7 @@ Phase 3 implements panel and dock blur plus panel glass. Overview blur and Launc
 - The desktop has no icons, and focus mode hides the panel and dock.
 - The lockscreen module can be disabled before login and does not leave patched methods behind.
 - Blur can be turned off completely, and the Shell still looks intentional.
+- Keyboard tiling snaps the focused window to halves and quarters with the configured gap, and leaves stock behavior alone when disabled.
 - Reset restores stock panel, dock, and desktop behavior.
 - No module leaves a source or signal after disable.
 

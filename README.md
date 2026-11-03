@@ -2,7 +2,7 @@
 
 A personal GNOME Shell extension that combines a hideable top panel, a floating dock, and a clean desktop in one codebase and one preferences window.
 
-Status: Phase 3 is implemented and tested headlessly. It is not published on extensions.gnome.org yet, and the live Wayland matrix is still pending.
+Status: Phase 4 is implemented and tested headlessly. It is not published on extensions.gnome.org yet, and the live Wayland matrix is still pending.
 
 ## Features
 
@@ -13,8 +13,9 @@ Status: Phase 3 is implemented and tested headlessly. It is not published on ext
 - Show Desktop minimizes only the windows it owns and restores them.
 - Custom lockscreen clock, date, message, and static wallpaper, active only while locked.
 - Opt-in native blur behind the panel and dock, with configurable radius, brightness, and panel glass opacity.
+- Opt-in keyboard tiling for halves, quarters, and the full work area, with configurable gaps.
 - Detect Ubuntu Dock and Tiling Assistant, explain the conflict, and offer one-click disable instead of silently fighting them.
-- Panel, dock, visual, desktop, and lockscreen preferences in a native GTK4 preferences window.
+- Panel, dock, visual, tiling, desktop, and lockscreen preferences in a native GTK4 preferences window.
 - Disable restores the stock panel struts and background, destroys the dock actor, restores DING values, releases the Show Desktop keybinding, and resets focus mode.
 
 ## Requirements
@@ -41,11 +42,12 @@ make uninstall
 
 ## Preferences
 
-Open the extension preferences from GNOME Extensions or Extension Manager. The window has five pages:
+Open the extension preferences from GNOME Extensions or Extension Manager. The window has six pages:
 
 - Panel: enable, hide mode, intellihide, and related timing.
 - Dock: enable, position, autohide, intellihide, size, spacing, padding, margin, radius, opacity, magnification, strength, and hide delay.
 - Visual: enable, panel blur, dock blur, radius, and brightness.
+- Tiling: enable, gap, Tiling Assistant conflict, and display-only shortcut rows.
 - Desktop: enable, hide icons, focus mode, and the Show Desktop shortcut.
 - Lockscreen: enable, clock and date formats, message, and wallpaper URI.
 
@@ -94,21 +96,25 @@ extension/              packaged extension source
   src/modules/desktop/  DING, focus mode, Show Desktop
   src/modules/lockscreen/  unlock-dialog clock, date, message, wallpaper
   src/modules/visual/      blur controller and panel/dock blur module
+  src/modules/tiling/      snap geometry and keyboard tiling module
   src/prefs/            preference pages and helpers
 scripts/                maintenance and live cycle scripts
 tests/                  headless GJS tests and install probe
 docs/                   design and implementation plan
 ```
 
-The Phase 3 implementation plan is in `docs/superpowers/plans/2026-11-04-phase-3-visual.md`; the Phase 2 plan is in `docs/superpowers/plans/2026-11-04-phase-2-lockscreen-dock-v2.md`; the Phase 1 plan is in `docs/plans/2026-11-03-phase-1-core-panel-dock-desktop.md`; the design and roadmap are in `DESIGN.md`.
+The Phase 4 implementation plan is in `docs/superpowers/plans/2026-11-04-phase-4-tiling.md`; the Phase 3 plan is in `docs/superpowers/plans/2026-11-04-phase-3-visual.md`; the Phase 2 plan is in `docs/superpowers/plans/2026-11-04-phase-2-lockscreen-dock-v2.md`; the Phase 1 plan is in `docs/plans/2026-11-03-phase-1-core-panel-dock-desktop.md`; the design and roadmap are in `DESIGN.md`.
 
-## Phase 3 limits
+## Phase 4 limits
 
 - Dock position supports bottom, left, and right; window previews and badges are not implemented.
 - The lockscreen uses the current Shell unlock dialog; GDM is untouched.
 - Lockscreen fade, unblank, and Esc-to-sleep remain manual checks.
 - The dock reveal is a two-pixel strip rather than the final slide and fade.
 - Blur uses `Shell.BlurEffect` in background mode. It is off by default because it costs GPU time.
+- Tiling uses keyboard layouts only. Drag-to-snap previews and snap assist are deferred because Mutter's tile preview and window-drag pipeline are private.
+- The gap applies to this module's layouts. Stock GNOME tiling still uses zero gaps.
+- Tiling is off by default and is blocked while Tiling Assistant is enabled.
 - The preference shortcut rows are display-only.
 - Live Wayland verification is still manual.
 - On Wayland, a freshly installed or updated extension only loads after logout and login; enabling it in the running session reports that it does not exist.

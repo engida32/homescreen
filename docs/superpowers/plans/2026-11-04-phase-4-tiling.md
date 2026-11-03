@@ -10,6 +10,16 @@
 
 **Spec:** `DESIGN.md`
 
+## Implementation corrections
+
+These were verified while executing the plan and supersede the snippets below:
+
+- `assertEqual` uses strict identity, so object rects need a local `assertRect` helper using `JSON.stringify`.
+- GSettings `as` defaults containing accelerators need CDATA around the `<Super>` markers.
+- Tiling Assistant on GNOME Shell 50.1 uses `move_to_monitor`, `move_frame`, then `move_resize_frame`; the module follows that order.
+- `Meta.Window.get_maximize_flags()` returns the current flags, and `unmaximize(flags)` uses those flags directly.
+- The work-area lookup falls back to `get_work_area_current_monitor()` when the per-monitor rect is unavailable.
+
 ## Global Constraints
 
 - GNOME Shell 50.1 on Wayland only. Metadata `shell-version` stays `["50"]`.
