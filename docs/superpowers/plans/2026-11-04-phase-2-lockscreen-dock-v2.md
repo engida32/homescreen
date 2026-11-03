@@ -10,6 +10,17 @@
 
 **Spec:** `DESIGN.md`
 
+## Implementation corrections
+
+These were verified while executing the plan and supersede the snippets below:
+
+- The live extension D-Bus object path is `/org/gnome/Shell/Extensions`, not `/org/gnome/Shell`.
+- `ListExtensions` nested values are GVariant; use `recursiveUnpack()` before reading `enabled`.
+- `Adw.PreferencesPage.add()` accepts only `Adw.PreferencesGroup`; wrap an `Adw.Banner` in a group.
+- Lockscreen clock updates must connect to `_clock._wallClock::notify::clock`; wrapping `_updateClock` after construction does not affect the bound handler.
+- Right and bottom edge tests use inclusive `>=` so the full two-pixel reveal strip is active.
+- Vertical magnification pivots at x=0 for a left dock and x=1 for a right dock.
+
 ## Global Constraints
 
 - GNOME Shell 50.1 on Wayland only. Metadata `shell-version` stays `["50"]`.

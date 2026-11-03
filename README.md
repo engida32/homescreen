@@ -43,7 +43,7 @@ make uninstall
 Open the extension preferences from GNOME Extensions or Extension Manager. The window has four pages:
 
 - Panel: enable, hide mode, intellihide, and related timing.
-- Dock: enable, autohide, intellihide, size, spacing, padding, margin, radius, opacity, magnification, strength, and hide delay.
+- Dock: enable, position, autohide, intellihide, size, spacing, padding, margin, radius, opacity, magnification, strength, and hide delay.
 - Desktop: enable, hide icons, focus mode, and the Show Desktop shortcut.
 - Lockscreen: enable, clock and date formats, message, and wallpaper URI.
 
@@ -107,6 +107,7 @@ The Phase 2 implementation plan is in `docs/superpowers/plans/2026-11-04-phase-2
 - The dock reveal is a two-pixel strip rather than the final slide and fade.
 - The preference shortcut rows are display-only.
 - Live Wayland verification is still manual.
+- On Wayland, a freshly installed or updated extension only loads after logout and login; enabling it in the running session reports that it does not exist.
 
 ## License
 
