@@ -468,6 +468,8 @@ export class DockModule {
         if (!this._container)
             return;
 
+        this._background.set_style(dockBackgroundStyle(this._settings.get_int('dock-radius'), this._settings.get_double('dock-opacity')));
+
         const monitor = Main.layoutManager.primaryMonitor;
         if (!monitor)
             return;
@@ -483,7 +485,6 @@ export class DockModule {
         this._shownY = origin.y;
         this._hiddenY = hiddenDockY(monitor, margin);
         this._box.set_style(`spacing: ${spacing}px; padding: ${padding}px;`);
-        this._background.set_style(dockBackgroundStyle(this._settings.get_int('dock-radius'), this._settings.get_double('dock-opacity')));
         this._container.set_size(width, height);
         const shown = this._shouldStayShown();
         this._container.set_position(origin.x, shown ? this._shownY : this._hiddenY);

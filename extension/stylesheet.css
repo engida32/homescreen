@@ -1,6 +1,10 @@
 .homescreen-panel {
-    background-color: rgba(28, 28, 30, 0.72);
     border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+#panel.homescreen-panel,
+#panel.homescreen-panel:overview {
+    background-color: rgba(28, 28, 30, 0.72) !important;
 }
 
 .homescreen-dock {

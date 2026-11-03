@@ -23,6 +23,7 @@ export class PanelModule {
         this._settings = null;
         this._scope = null;
         this._panelBox = null;
+        this._panelSurface = null;
         this._baseY = 0;
         this._hidden = false;
         this._forcedHidden = false;
@@ -45,7 +46,8 @@ export class PanelModule {
             this._panelBox = Main.layoutManager.panelBox;
             this._baseY = Main.layoutManager.primaryMonitor?.y ?? 0;
 
-            this._panelBox.add_style_class_name('homescreen-panel');
+            this._panelSurface = Main.panel ?? this._panelBox;
+            this._panelSurface.add_style_class_name('homescreen-panel');
             Main.layoutManager.removeChrome(this._panelBox);
             Main.layoutManager.addChrome(this._panelBox, {
                 affectsStruts: false,
@@ -467,10 +469,12 @@ export class PanelModule {
             // Best-effort cleanup.
         }
         if (this._panelBox) {
-            try {
-                this._panelBox.remove_style_class_name('homescreen-panel');
-            } catch {
-                // The style may not have been added.
+            if (this._panelSurface) {
+                try {
+                    this._panelSurface.remove_style_class_name('homescreen-panel');
+                } catch {
+                    // The style may not have been added.
+                }
             }
             try {
                 this._panelBox.remove_all_transitions();
@@ -491,6 +495,7 @@ export class PanelModule {
             this._affectsStruts = true;
         }
         this._panelBox = null;
+        this._panelSurface = null;
         this._hidden = false;
         this._forcedHidden = false;
     }
@@ -503,7 +508,8 @@ export class PanelModule {
         this._keybindingBound = false;
         this._destroyPressureBarrier();
         this._untrackAllWindows();
-        this._panelBox.remove_style_class_name('homescreen-panel');
+        if (this._panelSurface)
+            this._panelSurface.remove_style_class_name('homescreen-panel');
         this._setUnredirectDisabled(false);
         this._hidden = false;
         this._forcedHidden = false;
