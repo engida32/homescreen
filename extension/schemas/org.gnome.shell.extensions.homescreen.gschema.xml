@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="homescreen">
+  <schema id="org.gnome.shell.extensions.homescreen"
+          path="/org/gnome/shell/extensions/homescreen/">
+
+    <key name="panel-enabled" type="b">
+      <default>true</default>
+      <summary>Enable the panel module</summary>
+    </key>
+    <key name="panel-mode" type="s">
+      <default>'autohide'</default>
+      <summary>Panel visibility mode</summary>
+      <description>One of always, autohide, intellihide, hidden.</description>
+    </key>
+    <key name="panel-show-in-overview" type="b">
+      <default>true</default>
+      <summary>Show the panel in the overview</summary>
+    </key>
+    <key name="panel-show-fullscreen" type="b">
+      <default>false</default>
+      <summary>Reveal the panel over fullscreen windows</summary>
+    </key>
+    <key name="panel-hide-delay" type="i">
+      <default>800</default>
+      <range min="0" max="5000"/>
+      <summary>Hide delay in milliseconds</summary>
+    </key>
+    <key name="panel-reveal-pressure" type="i">
+      <default>100</default>
+      <range min="0" max="500"/>
+      <summary>Edge pressure needed to reveal the panel</summary>
+    </key>
+    <key name="panel-pressure-timeout" type="i">
+      <default>1000</default>
+      <range min="100" max="3000"/>
+      <summary>Pressure timeout in milliseconds</summary>
+    </key>
+    <key name="panel-animation-time" type="d">
+      <default>0.18</default>
+      <range min="0.0" max="0.6"/>
+      <summary>Panel animation time in seconds</summary>
+    </key>
+    <key name="panel-toggle-shortcut" type="as">
+      <default>[]</default>
+      <summary>Panel toggle shortcut</summary>
+    </key>
+
+    <key name="dock-enabled" type="b">
+      <default>true</default>
+      <summary>Enable the dock module</summary>
+    </key>
+    <key name="dock-position" type="s">
+      <default>'bottom'</default>
+      <summary>Dock position</summary>
+      <description>Phase 1 uses bottom. left and right are reserved for the dock v2 plan.</description>
+    </key>
+    <key name="dock-icon-size" type="i">
+      <default>52</default>
+      <range min="32" max="72"/>
+      <summary>Dock icon size</summary>
+    </key>
+    <key name="dock-spacing" type="i">
+      <default>8</default>
+      <range min="4" max="16"/>
+      <summary>Space between dock icons</summary>
+    </key>
+    <key name="dock-padding" type="i">
+      <default>10</default>
+      <range min="4" max="20"/>
+      <summary>Dock inner padding</summary>
+    </key>
+    <key name="dock-margin" type="i">
+      <default>10</default>
+      <range min="4" max="24"/>
+      <summary>Dock margin from the screen edge</summary>
+    </key>
+    <key name="dock-radius" type="i">
+      <default>24</default>
+      <range min="16" max="32"/>
+      <summary>Dock corner radius</summary>
+    </key>
+    <key name="dock-opacity" type="d">
+      <default>0.72</default>
+      <range min="0.3" max="1.0"/>
+      <summary>Dock background opacity</summary>
+    </key>
+    <key name="dock-autohide" type="b">
+      <default>true</default>
+      <summary>Hide the dock when not in use</summary>
+    </key>
+    <key name="dock-intellihide" type="b">
+      <default>true</default>
+      <summary>Hide the dock when a window overlaps it</summary>
+    </key>
+    <key name="dock-magnification" type="b">
+      <default>true</default>
+      <summary>Magnify dock icons near the pointer</summary>
+    </key>
+    <key name="dock-magnification-strength" type="d">
+      <default>0.35</default>
+      <range min="0.0" max="0.45"/>
+      <summary>Dock magnification strength</summary>
+    </key>
+    <key name="dock-hide-delay" type="i">
+      <default>300</default>
+      <range min="0" max="2000"/>
+      <summary>Dock hide delay in milliseconds</summary>
+    </key>
+
+    <key name="desktop-enabled" type="b">
+      <default>true</default>
+      <summary>Enable the desktop module</summary>
+    </key>
+    <key name="desktop-hide-icons" type="b">
+      <default>true</default>
+      <summary>Hide desktop icons</summary>
+    </key>
+    <key name="desktop-focus-mode" type="b">
+      <default>false</default>
+      <summary>Hide the panel and dock for focus</summary>
+    </key>
+    <key name="desktop-show-desktop-shortcut" type="as">
+      <default>[]</default>
+      <summary>Show desktop shortcut</summary>
+    </key>
+
+    <key name="diagnostics-json" type="s">
+      <default>'{}'</default>
+      <summary>Last module status snapshot</summary>
+    </key>
+  </schema>
+</schemalist>

@@ -1,0 +1,8 @@
+{
+  "uuid": "homescreen@engida32.github.io",
+  "name": "Homescreen",
+  "description": "A personal GNOME Shell workspace with a hideable panel, a floating dock, and a clean desktop.",
+  "shell-version": ["50"],
+  "settings-schema": "org.gnome.shell.extensions.homescreen",
+  "url": "https://github.com/engida32/homescreen"
+}
