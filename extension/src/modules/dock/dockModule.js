@@ -8,6 +8,7 @@ import * as AppFavorites from 'resource:///org/gnome/shell/ui/appFavorites.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import {HomescreenDockIcon} from './dockIcon.js';
+import {dockBackgroundStyle} from './dockStyle.js';
 import {
     dockHeight,
     dockOrigin,
@@ -88,6 +89,8 @@ export class DockModule {
             this._scope.signal(this._settings, 'changed::dock-spacing', () => this._rebuild());
             this._scope.signal(this._settings, 'changed::dock-padding', () => this._rebuild());
             this._scope.signal(this._settings, 'changed::dock-margin', () => this._position());
+            this._scope.signal(this._settings, 'changed::dock-radius', () => this._position());
+            this._scope.signal(this._settings, 'changed::dock-opacity', () => this._position());
 
             this._scope.signal(Main.overview, 'showing', () => {
                 this._overviewVisible = true;
@@ -480,6 +483,7 @@ export class DockModule {
         this._shownY = origin.y;
         this._hiddenY = hiddenDockY(monitor, margin);
         this._box.set_style(`spacing: ${spacing}px; padding: ${padding}px;`);
+        this._background.set_style(dockBackgroundStyle(this._settings.get_int('dock-radius'), this._settings.get_double('dock-opacity')));
         this._container.set_size(width, height);
         const shown = this._shouldStayShown();
         this._container.set_position(origin.x, shown ? this._shownY : this._hiddenY);

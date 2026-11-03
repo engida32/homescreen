@@ -1,1 +1,56 @@
-/* Homescreen styles are added in Task 13. */
+.homescreen-panel {
+    background-color: rgba(28, 28, 30, 0.72);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.homescreen-dock {
+    margin: 0;
+}
+
+.homescreen-dock-background {
+    background-color: rgba(28, 28, 30, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.homescreen-dock-box {
+    spacing: 8px;
+    padding: 10px;
+}
+
+.homescreen-dock-icon {
+    border-radius: 12px;
+}
+
+.homescreen-dock-icon:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.homescreen-running .app-grid-running-dot {
+    background-color: #e95420;
+    width: 4px;
+    height: 4px;
+    border-radius: 2px;
+    margin-bottom: 2px;
+}
+
+.homescreen-dock .app-grid-running-dot {
+    background-color: rgba(255, 255, 255, 0.36);
+    width: 4px;
+    height: 4px;
+    border-radius: 2px;
+    margin-bottom: 2px;
+}
+
+.homescreen-dock .homescreen-running .app-grid-running-dot {
+    background-color: #e95420;
+}
+
+.homescreen-dock-label {
+    background-color: rgba(0, 0, 0, 0.78);
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 11px;
+}
