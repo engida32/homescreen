@@ -1,6 +1,7 @@
 import Adw from 'gi://Adw';
 
 import {comboRow, spinRow, spinRowDouble, switchRow} from './helpers.js';
+import {createConflictBanner, revealIfEnabled} from './conflicts.js';
 
 export function buildDockPage(window, settings) {
     const page = new Adw.PreferencesPage({
@@ -8,6 +9,12 @@ export function buildDockPage(window, settings) {
         icon_name: 'view-app-grid-symbolic',
     });
     window.add(page);
+
+    const conflictGroup = new Adw.PreferencesGroup({title: 'Compatibility'});
+    page.add(conflictGroup);
+    const conflict = createConflictBanner('ubuntu-dock@ubuntu.com', 'Ubuntu Dock');
+    conflictGroup.add(conflict);
+    revealIfEnabled(conflict, 'ubuntu-dock@ubuntu.com');
 
     const general = new Adw.PreferencesGroup({title: 'General'});
     page.add(general);
