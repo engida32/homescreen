@@ -17,6 +17,7 @@ import {
     slotCenter,
 } from './layout.js';
 import {scalesForCenters} from './magnification.js';
+import {shouldShowDock} from './visibility.js';
 
 const WINDOW_SIGNALS = [
     'position-changed',
@@ -39,7 +40,9 @@ export class DockModule {
         this._hideSource = 0;
         this._forcedHidden = false;
         this._overviewVisible = false;
+        this._menuOpen = false;
         this._windowSignals = new Map();
+        this._iconMenuSignals = new Map();
         this._shownY = 0;
         this._hiddenY = 0;
     }
@@ -47,6 +50,7 @@ export class DockModule {
     enable(context) {
         this._settings = context.settings;
         this._scope = context.scope;
+        this._overviewVisible = Main.overview.visible;
 
         this._container = new St.Widget({
             name: 'homescreen-dock',
@@ -93,6 +97,7 @@ export class DockModule {
                 this._overviewVisible = false;
                 this._updateDockVisibility();
             });
+            this._scope.signal(Main.layoutManager, 'monitors-changed', () => this._position());
             this._scope.signal(global.stage, 'motion-event', () => this._onStageMotion());
             this._scope.signal(this._settings, 'changed::dock-autohide', () => this._updateDockVisibility());
             this._scope.signal(this._settings, 'changed::dock-intellihide', () => this._updateDockVisibility());
@@ -156,8 +161,10 @@ export class DockModule {
         const monitor = Main.layoutManager.primaryMonitor;
         if (!monitor)
             return false;
-        const [, y] = global.get_pointer();
-        return y >= monitor.y + monitor.height - 2;
+        const [x, y] = global.get_pointer();
+        return x >= monitor.x &&
+            x < monitor.x + monitor.width &&
+            y >= monitor.y + monitor.height - 2;
     }
 
     _isPointerOverDock() {
@@ -204,17 +211,19 @@ export class DockModule {
     }
 
     _shouldStayShown() {
-        if (this._forcedHidden || !this._container || this._icons.length === 0)
+        if (!this._container)
             return false;
-        if (this._overviewVisible)
-            return true;
-        if (this._isPointerAtEdge() || this._isPointerOverDock())
-            return true;
-        if (this._settings.get_boolean('dock-intellihide') && this._windowsOverlapDock())
-            return false;
-        if (this._settings.get_boolean('dock-autohide'))
-            return false;
-        return true;
+        return shouldShowDock({
+            forcedHidden: this._forcedHidden,
+            hasIcons: this._icons.length > 0,
+            overviewVisible: this._overviewVisible,
+            pointerAtEdge: this._isPointerAtEdge(),
+            pointerOverDock: this._isPointerOverDock(),
+            menuOpen: this._menuOpen,
+            intellihide: this._settings.get_boolean('dock-intellihide'),
+            overlaps: this._windowsOverlapDock(),
+            autohide: this._settings.get_boolean('dock-autohide'),
+        });
     }
 
     _cancelHide() {
@@ -267,7 +276,8 @@ export class DockModule {
     }
 
     _scheduleDockHide() {
-        this._cancelHide();
+        if (this._hideSource)
+            return;
         if (!this._container || this._forcedHidden ||
             this._overviewVisible || this._icons.length === 0)
             return;
@@ -283,8 +293,7 @@ export class DockModule {
     _onStageMotion() {
         if (!this._container)
             return Clutter.EVENT_PROPAGATE;
-        if (this._container.visible && !this._forcedHidden)
-            this._updateMagnification();
+        this._updateMagnification();
         if (this._forcedHidden || this._overviewVisible ||
             this._icons.length === 0)
             return Clutter.EVENT_PROPAGATE;
@@ -362,8 +371,11 @@ export class DockModule {
 
     _updateMagnification() {
         if (!this._container ||
+            !this._container.visible ||
+            this._forcedHidden ||
             !this._settings.get_boolean('dock-magnification') ||
-            this._icons.length === 0) {
+            this._icons.length === 0 ||
+            !this._isPointerOverDock()) {
             this._resetMagnification();
             return;
         }
@@ -398,9 +410,12 @@ export class DockModule {
     }
 
     _rebuild() {
-        for (const icon of this._icons)
+        for (const icon of this._icons) {
+            this._disconnectIconMenu(icon);
             icon.destroy();
+        }
         this._icons = [];
+        this._menuOpen = false;
 
         const appSystem = Shell.AppSystem.get_default();
         const favorites = AppFavorites.getAppFavorites();
@@ -415,10 +430,33 @@ export class DockModule {
         this._position();
     }
 
+    _disconnectIconMenu(icon) {
+        const id = this._iconMenuSignals.get(icon);
+        if (!id)
+            return;
+        this._iconMenuSignals.delete(icon);
+        this._scope?.disconnect(id);
+    }
+
+    _resetIconMenus() {
+        for (const icon of [...this._iconMenuSignals.keys()])
+            this._disconnectIconMenu(icon);
+        this._menuOpen = false;
+    }
+
     _makeIcon(app) {
         const icon = new HomescreenDockIcon(app);
         icon.set_style('padding: 0;');
         icon.icon.setIconSize(this._settings.get_int('dock-icon-size'));
+        const menuId = this._scope.signal(icon, 'menu-state-changed', (_icon, open) => {
+            this._menuOpen = open;
+            if (open) {
+                this._cancelHide();
+                return;
+            }
+            this._updateDockVisibility();
+        });
+        this._iconMenuSignals.set(icon, menuId);
         this._box.add_child(icon);
         return icon;
     }
@@ -451,6 +489,7 @@ export class DockModule {
 
     _destroyActors() {
         this._untrackAllWindows();
+        this._resetIconMenus();
         for (const icon of this._icons)
             icon.destroy();
         this._icons = [];
