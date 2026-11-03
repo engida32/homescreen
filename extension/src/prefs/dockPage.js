@@ -16,7 +16,7 @@ export function buildDockPage(window, settings) {
 
     const behavior = new Adw.PreferencesGroup({title: 'Behavior'});
     page.add(behavior);
-    behavior.add(comboRow(settings, 'dock-position', 'Position', ['bottom']));
+    behavior.add(comboRow(settings, 'dock-position', 'Position', ['bottom', 'left', 'right']));
     behavior.add(switchRow(settings, 'dock-autohide', 'Auto hide',
         'Hide the dock when the pointer leaves it.'));
     behavior.add(switchRow(settings, 'dock-intellihide', 'Intellihide',
@@ -31,7 +31,7 @@ export function buildDockPage(window, settings) {
     size.add(spinRow(settings, 'dock-padding', 'Inner padding',
         'Pixels around the icons.', 4, 20, 1));
     size.add(spinRow(settings, 'dock-margin', 'Screen margin',
-        'Pixels from the bottom edge.', 4, 24, 1));
+        'Pixels from the screen edge.', 4, 24, 1));
     size.add(spinRow(settings, 'dock-radius', 'Corner radius',
         'Pixels.', 16, 32, 1));
 

@@ -50,9 +50,14 @@
       <summary>Enable the dock module</summary>
     </key>
     <key name="dock-position" type="s">
+      <choices>
+        <choice value='bottom'/>
+        <choice value='left'/>
+        <choice value='right'/>
+      </choices>
       <default>'bottom'</default>
       <summary>Dock position</summary>
-      <description>Phase 1 uses bottom. left and right are reserved for the dock v2 plan.</description>
+      <description>One of bottom, left, or right.</description>
     </key>
     <key name="dock-icon-size" type="i">
       <default>52</default>

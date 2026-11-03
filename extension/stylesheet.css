@@ -58,3 +58,8 @@
     padding: 3px 8px;
     font-size: 11px;
 }
+
+.homescreen-dock-vertical .app-grid-running-dot {
+    margin-bottom: 0;
+    margin-right: 2px;
+}

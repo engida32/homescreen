@@ -28,7 +28,7 @@ export function dockLength(count, iconSize, spacing, padding) {
 }
 
 export function dockThickness(iconSize, padding, indicatorSpace = 10) {
-    return iconSize + padding * 2 + indicatorSpace;
+    return dockHeight(iconSize, padding, indicatorSpace);
 }
 
 export function dockBounds(position, monitor, count, iconSize, spacing, padding, margin) {
@@ -74,9 +74,9 @@ export function pointerAtDockEdge(position, monitor, x, y, threshold = 2) {
         return x >= monitor.x && x < monitor.x + threshold &&
             y >= monitor.y && y < monitor.y + monitor.height;
     if (position === 'right')
-        return x > monitor.x + monitor.width - threshold && x < monitor.x + monitor.width &&
+        return x >= monitor.x + monitor.width - threshold && x < monitor.x + monitor.width &&
             y >= monitor.y && y < monitor.y + monitor.height;
-    return y > monitor.y + monitor.height - threshold && y < monitor.y + monitor.height &&
+    return y >= monitor.y + monitor.height - threshold && y < monitor.y + monitor.height &&
         x >= monitor.x && x < monitor.x + monitor.width;
 }
 

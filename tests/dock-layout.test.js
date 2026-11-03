@@ -1,3 +1,5 @@
+import Gio from 'gi://Gio';
+
 import {
     dockBounds,
     dockHeight,
@@ -59,12 +61,30 @@ assertEqual(hiddenLeft.y, 304, 'hidden left dock keeps its centered y');
 const hiddenRight = hiddenDockPosition('right', leftMonitor, 10, right);
 assertEqual(hiddenRight.x, 998, 'hidden right dock leaves a two pixel strip');
 
-assert(pointerAtDockEdge('left', leftMonitor, 1, 400), 'left edge is detected');
-assert(pointerAtDockEdge('right', leftMonitor, 999, 400), 'right edge is detected');
-assert(pointerAtDockEdge('bottom', leftMonitor, 500, 799), 'bottom edge is detected');
+assert(pointerAtDockEdge('left', leftMonitor, 0, 400), 'left edge starts at the monitor edge');
+assert(pointerAtDockEdge('left', leftMonitor, 1, 400), 'left edge is two pixels wide');
+assert(pointerAtDockEdge('right', leftMonitor, 998, 400), 'right edge starts two pixels in');
+assert(pointerAtDockEdge('right', leftMonitor, 999, 400), 'right edge reaches the monitor edge');
+assert(pointerAtDockEdge('bottom', leftMonitor, 500, 798), 'bottom edge starts two pixels above');
+assert(pointerAtDockEdge('bottom', leftMonitor, 500, 799), 'bottom edge reaches the monitor edge');
+assert(!pointerAtDockEdge('left', leftMonitor, 2, 400), 'two pixels is outside the left edge');
 assert(!pointerAtDockEdge('left', leftMonitor, 20, 400), 'inside the monitor is not the edge');
 
 assertEqual(slotCenterForAxis(0, 52, 8, 10, false), 36, 'horizontal slot');
 assertEqual(slotCenterForAxis(1, 52, 8, 10, true), 96, 'vertical slot');
+
+const schemaSource = Gio.SettingsSchemaSource.get_default();
+const schema = schemaSource.lookup('org.gnome.shell.extensions.homescreen', true);
+if (!schema)
+    throw new Error('schema not compiled; run make schemas first');
+const choices = schema.get_key('dock-position')
+    .get_range()
+    .get_child_value(1)
+    .recursiveUnpack();
+assert(choices?.includes('left'), 'left dock position is allowed');
+assert(choices?.includes('right'), 'right dock position is allowed');
+const settings = new Gio.Settings({settings_schema: schema});
+settings.set_string('dock-position', 'left');
+assertEqual(settings.get_string('dock-position'), 'left', 'left dock position is stored');
 
 print('dock layout tests passed');
