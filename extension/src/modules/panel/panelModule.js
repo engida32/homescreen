@@ -101,6 +101,8 @@ export class PanelModule {
 
     setForcedHidden(hidden) {
         this._forcedHidden = hidden;
+        if (!this._panelBox)
+            return;
         if (hidden) {
             this._setAffectsStruts(false);
             this._hide(false);
