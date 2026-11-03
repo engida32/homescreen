@@ -1,10 +1,12 @@
 import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
 
 import * as Dash from 'resource:///org/gnome/shell/ui/dash.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-export class HomescreenDockIcon extends Dash.DashIcon {
+export const HomescreenDockIcon = GObject.registerClass(
+class HomescreenDockIcon extends Dash.DashIcon {
     _init(app) {
         super._init(app);
         this.add_style_class_name('homescreen-dock-icon');
@@ -57,4 +59,4 @@ export class HomescreenDockIcon extends Dash.DashIcon {
 
         Main.activateWindow(windows[0]);
     }
-}
+});

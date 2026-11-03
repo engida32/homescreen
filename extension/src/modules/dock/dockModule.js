@@ -53,22 +53,29 @@ export class DockModule {
             trackFullscreen: true,
         });
 
-        const appSystem = Shell.AppSystem.get_default();
-        const favorites = AppFavorites.getAppFavorites();
-        this._scope.signal(appSystem, 'installed-changed', () => this._queueRebuild());
-        this._scope.signal(appSystem, 'app-state-changed', () => this._queueRebuild());
-        this._scope.signal(favorites, 'changed', () => this._queueRebuild());
-        this._scope.signal(this._settings, 'changed::dock-icon-size', () => this._rebuild());
-        this._scope.signal(this._settings, 'changed::dock-spacing', () => this._rebuild());
-        this._scope.signal(this._settings, 'changed::dock-padding', () => this._rebuild());
-        this._scope.signal(this._settings, 'changed::dock-margin', () => this._position());
+        try {
+            const appSystem = Shell.AppSystem.get_default();
+            const favorites = AppFavorites.getAppFavorites();
+            this._scope.signal(appSystem, 'installed-changed', () => this._queueRebuild());
+            this._scope.signal(appSystem, 'app-state-changed', () => this._queueRebuild());
+            this._scope.signal(favorites, 'changed', () => this._queueRebuild());
+            this._scope.signal(this._settings, 'changed::dock-icon-size', () => this._rebuild());
+            this._scope.signal(this._settings, 'changed::dock-spacing', () => this._rebuild());
+            this._scope.signal(this._settings, 'changed::dock-padding', () => this._rebuild());
+            this._scope.signal(this._settings, 'changed::dock-margin', () => this._position());
 
-        this._rebuild();
+            this._rebuild();
+        } catch (error) {
+            this._destroyActors();
+            throw error;
+        }
     }
 
     setForcedHidden(hidden) {
         this._forcedHidden = hidden;
-        this._container.visible = !hidden;
+        if (!this._container)
+            return;
+        this._container.visible = !hidden && this._icons.length > 0;
     }
 
     _queueRebuild() {
@@ -101,13 +108,14 @@ export class DockModule {
 
     _makeIcon(app) {
         const icon = new HomescreenDockIcon(app);
+        icon.set_style('padding: 0;');
         icon.icon.setIconSize(this._settings.get_int('dock-icon-size'));
         this._box.add_child(icon);
         return icon;
     }
 
     _position() {
-        if (!this._container || this._icons.length === 0)
+        if (!this._container)
             return;
 
         const monitor = Main.layoutManager.primaryMonitor;
@@ -127,13 +135,14 @@ export class DockModule {
         this._box.set_style(`spacing: ${spacing}px; padding: ${padding}px;`);
         this._container.set_size(width, height);
         this._container.set_position(origin.x, this._forcedHidden ? this._hiddenY : this._shownY);
-        this._container.visible = !this._forcedHidden;
+        this._container.visible = !this._forcedHidden && this._icons.length > 0;
     }
 
-    disable() {
+    _destroyActors() {
         for (const icon of this._icons)
             icon.destroy();
         this._icons = [];
+        this._rebuildSource = 0;
         if (this._container) {
             Main.layoutManager.removeChrome(this._container);
             this._container.destroy();
@@ -141,5 +150,9 @@ export class DockModule {
         this._container = null;
         this._background = null;
         this._box = null;
+    }
+
+    disable() {
+        this._destroyActors();
     }
 }
