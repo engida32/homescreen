@@ -32,9 +32,13 @@ export function spinRow(settings, key, title, subtitle, lower, upper, step) {
 }
 
 export function spinRowDouble(settings, key, title, subtitle, lower, upper, step) {
+    const [mantissa, exponent] = String(step).toLowerCase().split('e-');
+    const digits = Math.min(20, Math.max(0,
+        (mantissa.split('.')[1]?.length ?? 0) + (exponent ? Number(exponent) : 0)));
     const row = new Adw.SpinRow({
         title,
         subtitle,
+        digits,
         adjustment: new Gtk.Adjustment({
             lower,
             upper,
