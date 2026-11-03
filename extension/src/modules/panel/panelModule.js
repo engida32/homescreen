@@ -490,6 +490,7 @@ export class PanelModule {
             }
             this._affectsStruts = true;
         }
+        this._panelBox = null;
         this._hidden = false;
         this._forcedHidden = false;
     }

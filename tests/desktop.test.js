@@ -18,20 +18,35 @@ class FakeSettings {
     }
 }
 
-const settings = new FakeSettings({
-    'show-home': true,
+const original = {
+    'show-home': false,
     'show-trash': true,
-    'show-volumes': true,
+    'show-volumes': false,
     'show-network-volumes': true,
-});
+};
+
+const settings = new FakeSettings(original);
 
 const snapshot = snapshotDing(settings);
-assertEqual(snapshot['show-home'], true, 'snapshot captures the original value');
+for (const key of DING_KEYS)
+    assertEqual(snapshot[key], original[key], `snapshot captures ${key}`);
 hideDingIcons(settings);
 for (const key of DING_KEYS)
     assertEqual(settings.get_boolean(key), false, `${key} is hidden`);
 restoreDing(settings, snapshot);
 for (const key of DING_KEYS)
-    assertEqual(settings.get_boolean(key), true, `${key} is restored`);
+    assertEqual(settings.get_boolean(key), original[key], `${key} is restored`);
+
+const partial = {...snapshot};
+delete partial['show-trash'];
+for (const key of DING_KEYS)
+    settings.set_boolean(key, false);
+restoreDing(settings, partial);
+assertEqual(settings.get_boolean('show-trash'), false, 'missing key stays unchanged');
+for (const key of DING_KEYS) {
+    if (key === 'show-trash')
+        continue;
+    assertEqual(settings.get_boolean(key), original[key], `${key} restores from partial snapshot`);
+}
 
 print('desktop tests passed');
