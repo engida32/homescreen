@@ -142,7 +142,11 @@ export class DockModule {
         for (const icon of this._icons)
             icon.destroy();
         this._icons = [];
-        this._rebuildSource = 0;
+        if (this._rebuildSource) {
+            this._scope?.removeSource(this._rebuildSource);
+            this._rebuildSource = 0;
+        }
+        this._forcedHidden = false;
         if (this._container) {
             Main.layoutManager.removeChrome(this._container);
             this._container.destroy();
