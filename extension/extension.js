@@ -7,6 +7,7 @@ import {PanelModule} from './src/modules/panel/panelModule.js';
 import {DockModule} from './src/modules/dock/dockModule.js';
 import {DesktopModule} from './src/modules/desktop/desktopModule.js';
 import {LockscreenModule} from './src/modules/lockscreen/lockscreenModule.js';
+import {VisualModule} from './src/modules/visual/visualModule.js';
 
 export default class HomescreenExtension extends Extension {
     enable() {
@@ -19,6 +20,7 @@ export default class HomescreenExtension extends Extension {
 
         this._registry.add('panel', new PanelModule(), 'panel-enabled');
         this._registry.add('dock', new DockModule(), 'dock-enabled');
+        this._registry.add('visual', new VisualModule(), 'visual-enabled');
         this._registry.add('desktop', new DesktopModule(), 'desktop-enabled');
         this._registry.add('lockscreen', new LockscreenModule(), 'lockscreen-enabled',
             {sessionModes: ['unlock-dialog']});

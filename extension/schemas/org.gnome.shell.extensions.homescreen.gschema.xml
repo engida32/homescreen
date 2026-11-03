@@ -150,6 +150,29 @@
       <summary>Lockscreen wallpaper URI</summary>
     </key>
 
+    <key name="visual-enabled" type="b">
+      <default>false</default>
+      <summary>Enable visual effects</summary>
+    </key>
+    <key name="visual-blur-panel" type="b">
+      <default>false</default>
+      <summary>Blur behind the panel</summary>
+    </key>
+    <key name="visual-blur-dock" type="b">
+      <default>false</default>
+      <summary>Blur behind the dock</summary>
+    </key>
+    <key name="visual-blur-radius" type="i">
+      <default>30</default>
+      <range min="8" max="64"/>
+      <summary>Blur radius in pixels</summary>
+    </key>
+    <key name="visual-blur-brightness" type="d">
+      <default>0.65</default>
+      <range min="0.0" max="1.0"/>
+      <summary>Blur brightness</summary>
+    </key>
+
     <key name="diagnostics-json" type="s">
       <default>'{}'</default>
       <summary>Last module status snapshot</summary>
