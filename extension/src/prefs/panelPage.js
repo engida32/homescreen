@@ -1,6 +1,6 @@
 import Adw from 'gi://Adw';
 
-import {comboRow, shortcutRow, spinRow, switchRow} from './helpers.js';
+import {comboRow, shortcutRow, spinRow, spinRowDouble, switchRow} from './helpers.js';
 
 export function buildPanelPage(window, settings) {
     const page = new Adw.PreferencesPage({
@@ -8,6 +8,11 @@ export function buildPanelPage(window, settings) {
         icon_name: 'focus-top-bar-symbolic',
     });
     window.add(page);
+
+    const general = new Adw.PreferencesGroup({title: 'General'});
+    page.add(general);
+    general.add(switchRow(settings, 'panel-enabled', 'Enable panel',
+        'Applies when the extension is re-enabled.'));
 
     const behavior = new Adw.PreferencesGroup({title: 'Behavior'});
     page.add(behavior);
@@ -27,6 +32,8 @@ export function buildPanelPage(window, settings) {
         'Pressure needed at the top edge. Lower is easier.', 0, 500, 10));
     timing.add(spinRow(settings, 'panel-pressure-timeout', 'Pressure timeout',
         'Milliseconds the pointer must rest at the edge.', 100, 3000, 100));
+    timing.add(spinRowDouble(settings, 'panel-animation-time', 'Animation time',
+        'Seconds for the panel to slide in and out.', 0.0, 0.6, 0.01));
 
     const overview = new Adw.PreferencesGroup({title: 'Overview'});
     page.add(overview);

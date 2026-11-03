@@ -31,6 +31,29 @@ export function spinRow(settings, key, title, subtitle, lower, upper, step) {
     return row;
 }
 
+export function spinRowDouble(settings, key, title, subtitle, lower, upper, step) {
+    const row = new Adw.SpinRow({
+        title,
+        subtitle,
+        adjustment: new Gtk.Adjustment({
+            lower,
+            upper,
+            step_increment: step,
+            page_increment: step * 5,
+            value: settings.get_double(key),
+        }),
+    });
+    row.connect('notify::value', () => {
+        settings.set_double(key, row.value);
+    });
+    settings.connect(`changed::${key}`, () => {
+        const value = settings.get_double(key);
+        if (Math.abs(row.value - value) > 0.0001)
+            row.value = value;
+    });
+    return row;
+}
+
 export function comboRow(settings, key, title, values) {
     const row = new Adw.ComboRow({
         title,
