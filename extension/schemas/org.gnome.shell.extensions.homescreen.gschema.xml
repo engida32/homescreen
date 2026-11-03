@@ -129,6 +129,27 @@
       <summary>Show desktop shortcut</summary>
     </key>
 
+    <key name="lockscreen-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the lockscreen module</summary>
+    </key>
+    <key name="lockscreen-clock-format" type="s">
+      <default>'%H:%M'</default>
+      <summary>Lockscreen clock format</summary>
+    </key>
+    <key name="lockscreen-date-format" type="s">
+      <default>'%A, %B %-d'</default>
+      <summary>Lockscreen date format</summary>
+    </key>
+    <key name="lockscreen-message" type="s">
+      <default>''</default>
+      <summary>Lockscreen message</summary>
+    </key>
+    <key name="lockscreen-wallpaper-uri" type="s">
+      <default>''</default>
+      <summary>Lockscreen wallpaper URI</summary>
+    </key>
+
     <key name="diagnostics-json" type="s">
       <default>'{}'</default>
       <summary>Last module status snapshot</summary>

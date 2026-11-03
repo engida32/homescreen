@@ -2,6 +2,7 @@ import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Ex
 
 import {buildDesktopPage} from './src/prefs/desktopPage.js';
 import {buildDockPage} from './src/prefs/dockPage.js';
+import {buildLockscreenPage} from './src/prefs/lockscreenPage.js';
 import {buildPanelPage} from './src/prefs/panelPage.js';
 
 export default class HomescreenPreferences extends ExtensionPreferences {
@@ -12,5 +13,6 @@ export default class HomescreenPreferences extends ExtensionPreferences {
         buildPanelPage(window, settings);
         buildDockPage(window, settings);
         buildDesktopPage(window, settings);
+        buildLockscreenPage(window, settings);
     }
 }
