@@ -4,5 +4,6 @@
   "description": "A personal GNOME Shell workspace with a hideable panel, a floating dock, and a clean desktop.",
   "shell-version": ["50"],
   "settings-schema": "org.gnome.shell.extensions.homescreen",
+  "session-modes": ["user", "unlock-dialog"],
   "url": "https://github.com/engida32/homescreen"
 }

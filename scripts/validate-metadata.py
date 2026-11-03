@@ -18,8 +18,8 @@ else:
         errors.append("shell-version must be exactly [\"50\"]")
     if data.get("settings-schema") != "org.gnome.shell.extensions.homescreen":
         errors.append("wrong settings-schema")
-    if "session-modes" in data:
-        errors.append("phase 1 must not request unlock-dialog")
+    if data.get("session-modes") != ["user", "unlock-dialog"]:
+        errors.append("metadata must opt into both user and unlock-dialog session modes")
 
 if not SCHEMA.exists():
     errors.append("missing settings schema")
