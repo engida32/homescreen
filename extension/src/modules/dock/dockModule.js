@@ -47,6 +47,7 @@ export class DockModule {
         this._hidden = {x: 0, y: 0};
         this._edge = 'bottom';
         this._vertical = false;
+        this._blurred = false;
     }
 
     enable(context) {
@@ -482,11 +483,25 @@ export class DockModule {
         return icon;
     }
 
+    getBackgroundActor() {
+        return this._background;
+    }
+
+    setBlurred(blurred) {
+        if (this._blurred === blurred)
+            return;
+        this._blurred = blurred;
+        this._position();
+    }
+
     _position() {
         if (!this._container)
             return;
 
-        this._background.set_style(dockBackgroundStyle(this._settings.get_int('dock-radius'), this._settings.get_double('dock-opacity')));
+        this._background.set_style(dockBackgroundStyle(
+            this._settings.get_int('dock-radius'),
+            this._settings.get_double('dock-opacity'),
+            this._blurred));
 
         const monitor = Main.layoutManager.primaryMonitor;
         if (!monitor)
@@ -538,6 +553,7 @@ export class DockModule {
         this._cancelHide();
         this._overviewVisible = false;
         this._forcedHidden = false;
+        this._blurred = false;
         if (this._container) {
             Main.layoutManager.removeChrome(this._container);
             this._container.destroy();

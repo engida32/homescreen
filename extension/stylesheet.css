@@ -7,6 +7,11 @@
     background-color: rgba(28, 28, 30, 0.72) !important;
 }
 
+#panel.homescreen-panel-blurred,
+#panel.homescreen-panel-blurred:overview {
+    background-color: rgba(28, 28, 30, 0.32) !important;
+}
+
 .homescreen-dock {
     margin: 0;
 }

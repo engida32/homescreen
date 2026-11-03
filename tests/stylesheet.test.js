@@ -15,6 +15,7 @@ function escapeRegex(value) {
 for (const selector of [
     '.homescreen-panel',
     '#panel.homescreen-panel',
+    '#panel.homescreen-panel-blurred',
     '.homescreen-dock',
     '.homescreen-dock-background',
     '.homescreen-dock-box',
@@ -30,6 +31,12 @@ assertEqual(
     dockBackgroundStyle(24, 0.72),
     'border-radius: 24px; background-color: rgba(28, 28, 30, 0.72);',
     'dock background style'
+);
+
+assertEqual(
+    dockBackgroundStyle(24, 0.72, true),
+    'border-radius: 24px; background-color: rgba(28, 28, 30, 0);',
+    'blurred dock background is transparent'
 );
 
 assertEqual(
