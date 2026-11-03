@@ -27,11 +27,11 @@ test: schemas
 		[ -e "$$file" ] || continue; \
 		GSETTINGS_SCHEMA_DIR="$(CURDIR)/extension/schemas" \
 		GSETTINGS_BACKEND=memory \
-		gjs -m "$$file"; \
+		gjs -m "$$file" || exit 1; \
 	done
 	@for file in extension/extension.js extension/prefs.js $$(find extension/src -name '*.js' -type f); do \
 		[ -e "$$file" ] || continue; \
-		node --input-type=module --check < "$$file"; \
+		node --input-type=module --check < "$$file" || exit 1; \
 	done
 
 check: pack test
