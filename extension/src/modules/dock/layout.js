@@ -22,3 +22,10 @@ export function dockOrigin(monitor, width, height, margin) {
 export function hiddenDockY(monitor, margin) {
     return monitor.y + monitor.height - 2;
 }
+
+export function rectsOverlap(a, b) {
+    return a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y;
+}
