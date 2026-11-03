@@ -1,6 +1,6 @@
 # Homescreen: Design and Roadmap
 
-Status: Phase 2 implemented, live verification pending
+Status: Phase 3 implemented, live verification pending
 Date: 2026-11-03
 Target: Ubuntu 26.04, GNOME Shell 50.1, Wayland
 Scope: personal use, one machine
@@ -331,6 +331,8 @@ Performance checks:
 | 6 | Presets, diagnostics, docs, packaging | Full reset, export and import, install and uninstall verified |
 
 Phase 1 is the first usable milestone. The other modules are not allowed to delay it.
+
+Phase 3 implements panel and dock blur plus panel glass. Overview blur and Launchpad mode are deferred to Phase 5, where the app grid and overview are restructured. Motion presets remain deferred until they can be added without a second animation system.
 
 ## Acceptance criteria
 
