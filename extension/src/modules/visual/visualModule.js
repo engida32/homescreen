@@ -6,10 +6,12 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {BlurController} from './blur.js';
 
 const BLUR_NAME = 'homescreen-blur';
+const OVERVIEW_BLUR_NAME = 'homescreen-overview-blur';
 const PANEL_CLASS = 'homescreen-panel-blurred';
 const SETTINGS_KEYS = [
     'visual-blur-panel',
     'visual-blur-dock',
+    'visual-blur-overview',
     'visual-blur-radius',
     'visual-blur-brightness',
 ];
@@ -22,6 +24,10 @@ export class VisualModule {
         this._controller = null;
         this._themeContext = null;
         this._panel = null;
+        // GNOME Shell 50.1 layout.js: _backgroundGroup is private and holds
+        // the wallpaper actors below global.window_group.
+        this._backgroundGroup = null;
+        this._overviewShowing = false;
     }
 
     enable(context) {
@@ -30,6 +36,8 @@ export class VisualModule {
         this._context = context;
         this._panel = Main.panel ?? null;
         this._themeContext = St.ThemeContext.get_for_stage(global.stage);
+        this._backgroundGroup = Main.layoutManager?._backgroundGroup ?? null;
+        this._overviewShowing = Main.overview?.visible ?? false;
 
         this._controller = new BlurController({
             effectFactory: name => new Shell.BlurEffect({name}),
@@ -43,12 +51,24 @@ export class VisualModule {
             this._controller?.setScaleFactor(this._themeContext.scale_factor || 1);
         });
 
+        if (Main.overview) {
+            this._scope.signal(Main.overview, 'showing', () => {
+                this._overviewShowing = true;
+                this._syncOverview();
+            });
+            this._scope.signal(Main.overview, 'hiding', () => {
+                this._overviewShowing = false;
+                this._syncOverview();
+            });
+        }
+
         this._sync();
     }
 
     _sync() {
         this._syncPanel();
         this._syncDock();
+        this._syncOverview();
     }
 
     _syncPanel() {
@@ -109,6 +129,33 @@ export class VisualModule {
         dock?.setBlurred?.(applied);
     }
 
+    _syncOverview() {
+        if (!this._backgroundGroup)
+            return;
+
+        const requested = this._settings.get_boolean('visual-blur-overview') &&
+            this._overviewShowing;
+
+        if (!requested) {
+            this._controller.remove(this._backgroundGroup, OVERVIEW_BLUR_NAME);
+            return;
+        }
+
+        try {
+            this._controller.apply(this._backgroundGroup, {
+                name: OVERVIEW_BLUR_NAME,
+                radius: this._settings.get_int('visual-blur-radius'),
+                brightness: this._settings.get_double('visual-blur-brightness'),
+                // Shell.BlurMode.ACTOR blurs the wallpaper actor itself.
+                // Verified against GNOME Shell 50.1.
+                mode: Shell.BlurMode.ACTOR,
+            });
+        } catch (error) {
+            this._controller.remove(this._backgroundGroup, OVERVIEW_BLUR_NAME);
+            this._context.logger.error('overview blur failed', error);
+        }
+    }
+
     disable() {
         this._controller?.removeAll();
         try {
@@ -124,6 +171,8 @@ export class VisualModule {
         this._controller = null;
         this._themeContext = null;
         this._panel = null;
+        this._backgroundGroup = null;
+        this._overviewShowing = false;
         this._context = null;
         this._settings = null;
         this._scope = null;

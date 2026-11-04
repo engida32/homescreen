@@ -20,6 +20,8 @@ export function buildVisualPage(window, settings) {
         'Uses the native Shell blur effect and lowers the panel opacity.'));
     blur.add(switchRow(settings, 'visual-blur-dock', 'Blur behind the dock',
         'Uses the native Shell blur effect and clears the dock background color.'));
+    blur.add(switchRow(settings, 'visual-blur-overview', 'Blur the overview wallpaper',
+        'Applies only while the overview is open.'));
     blur.add(spinRow(settings, 'visual-blur-radius', 'Blur radius',
         'Pixels. Higher values are softer and more expensive.', 8, 64, 1));
     blur.add(spinRowDouble(settings, 'visual-blur-brightness', 'Blur brightness',
