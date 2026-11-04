@@ -19,12 +19,12 @@ export class MonitorSampler {
         this._previousAt = 0;
     }
 
-    async sample() {
+    async sample(cancellable = null) {
         const read = path => Promise.resolve()
-            .then(() => this._readFile(path))
+            .then(() => this._readFile(path, cancellable))
             .catch(() => null);
         const queryDisk = () => Promise.resolve()
-            .then(() => this._queryDisk(this._diskPath))
+            .then(() => this._queryDisk(this._diskPath, cancellable))
             .catch(() => null);
 
         const [statText, memText, netText, thermalText, disk] = await Promise.all([
@@ -41,9 +41,9 @@ export class MonitorSampler {
         const elapsed = at - this._previousAt;
 
         const result = {
-            cpu: {percent: cpuUsage(this._previousCpu, stat)},
+            cpu: {percent: stat ? cpuUsage(this._previousCpu, stat) : null},
             memory: parseMemInfo(memText),
-            network: networkRates(this._previousNet, net, elapsed),
+            network: net ? networkRates(this._previousNet, net, elapsed) : null,
             temperature: parseThermal(thermalText),
             disk: disk ? diskUsage(disk.size, disk.free) : null,
         };

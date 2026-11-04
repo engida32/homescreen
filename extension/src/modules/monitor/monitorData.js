@@ -123,7 +123,7 @@ export function parseThermal(text) {
     if (!Number.isFinite(value))
         return null;
 
-    return value > 1000 ? value / 1000 : value;
+    return value >= 1000 ? value / 1000 : value;
 }
 
 export function diskUsage(size, free) {
@@ -156,7 +156,7 @@ export function formatBytes(bytes) {
         unit++;
     }
 
-    const rounded = value < 10 ? Math.round(value * 10) / 10 : Math.round(value);
+    const rounded = value < 10 ? value.toFixed(1) : `${Math.round(value)}`;
     return `${rounded} ${BYTE_UNITS[unit]}`;
 }
 

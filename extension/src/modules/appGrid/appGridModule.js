@@ -5,8 +5,22 @@ import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as OverviewControls from 'resource:///org/gnome/shell/ui/overviewControls.js';
 
-import {buildAlphabeticalPages} from './appGridLayout.js';
+import {
+    applyGridShape,
+    buildAlphabeticalPages,
+    buildLayoutVariant,
+    createLaunchpadToggle,
+    restoreGridShape,
+} from './appGridLayout.js';
 
+// Private GNOME Shell 50.1 APIs used here, verified against the installed
+// shell sources:
+// - overview.js / overviewControls.js: Main.overview._overview.controls.appDisplay,
+//   Main.overview.toggle, Main.overview.show, ControlsState.APP_GRID.
+// - appDisplay.js: _items, _savePages, _redisplay, app-picker-layout.
+// - iconGrid.js: _grid, layoutManager, fixedIconSize, _fixedCols, _fixedRows,
+//   columns_per_page, rows_per_page, _pageWidth, _pageHeight.
+// - layout.js: Main.layoutManager._backgroundGroup (visual module).
 const APP_DISPLAY_RETRIES = 20;
 const APP_DISPLAY_RETRY_MS = 250;
 const LAYOUT_DEBOUNCE_MS = 100;
@@ -28,8 +42,9 @@ export class AppGridModule {
         this._savePagesPatched = false;
         this._searchSettings = null;
         this._originalDisableExternal = null;
-        this._originalShow = null;
-        this._patchedShow = null;
+        this._originalToggle = null;
+        this._patchedToggle = null;
+        this._lastAlphabeticalSignature = null;
     }
 
     enable(context) {
@@ -37,6 +52,7 @@ export class AppGridModule {
         this._scope = context.scope;
         this._context = context;
         this._active = true;
+        this._retries = 0;
         this._initAppDisplay();
     }
 
@@ -85,8 +101,10 @@ export class AppGridModule {
         }
 
         this._scope.signal(appDisplay, 'view-loaded', () => {
-            if (this._active)
-                this._applyLabels();
+            if (!this._active)
+                return;
+            this._applyLabels();
+            this._queueAlphabetical();
         });
         this._scope.signal(Shell.AppSystem.get_default(), 'installed-changed',
             () => this._queueAlphabetical());
@@ -104,11 +122,37 @@ export class AppGridModule {
                 () => this._syncSetting(key));
         }
 
-        this._applyGridShape();
-        this._syncAlphabetical();
-        this._applyLabels();
-        this._syncRemoteSearch();
-        this._syncLaunchpad();
+        try {
+            this._applyGridShape();
+            this._syncAlphabetical();
+            this._applyLabels();
+            this._syncRemoteSearch();
+            this._syncLaunchpad();
+        } catch (error) {
+            this._context.logger.error('app grid initialization failed', error);
+            this._rollbackInitialization();
+        }
+    }
+
+    _rollbackInitialization() {
+        try {
+            this._restoreStock();
+        } catch (error) {
+            this._context?.logger.error('app grid rollback failed', error);
+        }
+
+        this._appDisplay = null;
+        this._originalGrid = null;
+        this._originalSavePages = null;
+        this._originalLayout = null;
+        this._preAlphabeticalLayout = null;
+        this._alphabeticalApplied = false;
+        this._savePagesPatched = false;
+        this._searchSettings = null;
+        this._originalDisableExternal = null;
+        this._originalToggle = null;
+        this._patchedToggle = null;
+        this._lastAlphabeticalSignature = null;
     }
 
     _syncSetting(key) {
@@ -139,11 +183,11 @@ export class AppGridModule {
 
     _applyGridShape() {
         const layout = this._appDisplay._grid.layoutManager;
-        layout.fixedIconSize = this._settings.get_int('app-grid-icon-size');
-        layout._fixedCols = this._settings.get_int('app-grid-columns');
-        layout._fixedRows = this._settings.get_int('app-grid-rows');
-        layout._pageWidth = -1;
-        layout._pageHeight = -1;
+        applyGridShape(layout, {
+            rows: this._settings.get_int('app-grid-rows'),
+            columns: this._settings.get_int('app-grid-columns'),
+            iconSize: this._settings.get_int('app-grid-icon-size'),
+        });
         this._appDisplay._grid.queue_relayout();
     }
 
@@ -180,20 +224,21 @@ export class AppGridModule {
         const entries = [...this._appDisplay._items.values()]
             .filter(icon => icon.visible && icon.id && icon.name)
             .map(icon => ({id: icon.id, name: icon.name}));
-        const itemsPerPage = this._settings.get_int('app-grid-rows') *
-            this._settings.get_int('app-grid-columns');
-        const pages = buildAlphabeticalPages(entries, itemsPerPage);
-        const layout = pages.map(page => {
-            const data = {};
-            page.forEach((entry, index) => {
-                data[entry.id] = {position: GLib.Variant.new_int32(index)};
-            });
-            return data;
-        });
+        const rows = this._settings.get_int('app-grid-rows');
+        const columns = this._settings.get_int('app-grid-columns');
+        const pages = buildAlphabeticalPages(entries, rows * columns);
+        const signature = `${rows}x${columns}:${entries.map(entry => entry.id).join('\n')}`;
+
+        if (this._alphabeticalApplied &&
+            signature === this._lastAlphabeticalSignature) {
+            this._applyLabels();
+            return;
+        }
 
         global.settings.set_value('app-picker-layout',
-            new GLib.Variant('aa{sv}', layout));
+            buildLayoutVariant(pages));
         this._alphabeticalApplied = true;
+        this._lastAlphabeticalSignature = signature;
 
         // GNOME Shell 50.1 appDisplay.js: _redisplay reads app-picker-layout
         // through PageManager and moves icons into the saved positions.
@@ -209,6 +254,7 @@ export class AppGridModule {
         global.settings.set_value('app-picker-layout',
             this._preAlphabeticalLayout ?? this._originalLayout);
         this._alphabeticalApplied = false;
+        this._lastAlphabeticalSignature = null;
         this._appDisplay._redisplay();
         this._appDisplay._grid.queue_relayout();
     }
@@ -240,8 +286,10 @@ export class AppGridModule {
     _syncRemoteSearch() {
         if (!this._searchSettings)
             return;
-        this._searchSettings.set_boolean('disable-external',
-            this._settings.get_boolean('app-grid-disable-remote-search'));
+        if (this._settings.get_boolean('app-grid-disable-remote-search'))
+            this._searchSettings.set_boolean('disable-external', true);
+        else if (this._originalDisableExternal === false)
+            this._searchSettings.set_boolean('disable-external', false);
     }
 
     _syncLaunchpad() {
@@ -249,37 +297,47 @@ export class AppGridModule {
             return;
 
         if (this._settings.get_boolean('app-grid-launchpad')) {
-            if (this._patchedShow)
+            if (this._patchedToggle)
                 return;
-            this._originalShow = Main.overview.show;
-            this._patchedShow = (state = OverviewControls.ControlsState.APP_GRID) =>
-                this._originalShow.call(Main.overview, state);
-            Main.overview.show = this._patchedShow;
-        } else if (this._patchedShow) {
-            if (Main.overview.show === this._patchedShow)
-                Main.overview.show = this._originalShow;
-            this._patchedShow = null;
-            this._originalShow = null;
+            this._originalToggle = Main.overview.toggle;
+            this._patchedToggle = createLaunchpadToggle(
+                Main.overview,
+                this._originalToggle,
+                OverviewControls.ControlsState.APP_GRID);
+            Main.overview.toggle = this._patchedToggle;
+        } else {
+            this._restoreLaunchpad();
         }
     }
 
-    disable() {
-        this._active = false;
-        this._layoutSource = 0;
+    _restoreLaunchpad() {
+        if (!this._patchedToggle)
+            return;
+        if (Main.overview?.toggle === this._patchedToggle)
+            Main.overview.toggle = this._originalToggle;
+        this._patchedToggle = null;
+        this._originalToggle = null;
+    }
 
+    _restoreSearch() {
+        if (!this._searchSettings || this._originalDisableExternal === null)
+            return;
+        try {
+            this._searchSettings.set_boolean('disable-external',
+                this._originalDisableExternal);
+        } catch {
+            // The schema may be unavailable during shell shutdown.
+        }
+    }
+
+    _restoreStock() {
         if (this._appDisplay) {
             this._restoreLayout();
             this._patchSavePages(false);
 
-            const layout = this._appDisplay._grid.layoutManager;
             if (this._originalGrid) {
-                layout.fixedIconSize = this._originalGrid.fixedIconSize;
-                layout._fixedCols = this._originalGrid.fixedCols;
-                layout._fixedRows = this._originalGrid.fixedRows;
-                layout.columns_per_page = this._originalGrid.columnsPerPage;
-                layout.rows_per_page = this._originalGrid.rowsPerPage;
-                layout._pageWidth = this._originalGrid.pageWidth;
-                layout._pageHeight = this._originalGrid.pageHeight;
+                restoreGridShape(this._appDisplay._grid.layoutManager,
+                    this._originalGrid);
                 this._appDisplay._grid.queue_relayout();
             }
 
@@ -289,21 +347,17 @@ export class AppGridModule {
             }
         }
 
-        if (this._searchSettings && this._originalDisableExternal !== null) {
-            try {
-                this._searchSettings.set_boolean('disable-external',
-                    this._originalDisableExternal);
-            } catch {
-                // The schema may be unavailable during shell shutdown.
-            }
-        }
+        this._restoreSearch();
+        this._restoreLaunchpad();
+    }
 
-        if (this._patchedShow) {
-            if (Main.overview?.show === this._patchedShow)
-                Main.overview.show = this._originalShow;
-            this._patchedShow = null;
-            this._originalShow = null;
-        }
+    disable() {
+        this._active = false;
+        if (this._layoutSource && this._scope)
+            this._scope.removeSource(this._layoutSource);
+        this._layoutSource = 0;
+
+        this._restoreStock();
 
         this._appDisplay = null;
         this._originalGrid = null;
@@ -311,9 +365,12 @@ export class AppGridModule {
         this._originalLayout = null;
         this._preAlphabeticalLayout = null;
         this._alphabeticalApplied = false;
+        this._lastAlphabeticalSignature = null;
         this._savePagesPatched = false;
         this._searchSettings = null;
         this._originalDisableExternal = null;
+        this._originalToggle = null;
+        this._patchedToggle = null;
         this._context = null;
         this._settings = null;
         this._scope = null;

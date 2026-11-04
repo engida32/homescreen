@@ -507,9 +507,24 @@ git commit -m "docs: record phase 5 monitor and app grid status"
 - Task 4: `Main.overview._overview.controls.appDisplay` may not exist at
   extension enable. The module retries 20 times at 250 ms before logging an
   error.
+- Task 4: each `a{sv}` page value must wrap its properties in a variant:
+  `new GLib.Variant('a{sv}', {position: ...})`. Passing a plain object for the
+  `v` value throws in GJS. The pure `buildLayoutVariant()` helper owns this and
+  is covered by a round-trip test.
+- Task 4: restore forces `_pageWidth` and `_pageHeight` to -1 so
+  `adaptToSize()` recomputes the stock icon size instead of returning early.
+- Task 4: Launchpad mode patches `Main.overview.toggle`, not
+  `Main.overview.show`, so `focusSearch()`, the D-Bus overview setter, and
+  `_shiftState()` keep their stock behavior.
+- Task 4: `view-loaded` reapplies the alphabetical layout only when the app
+  order or page shape changes. The signature guard prevents `_redisplay()`
+  from triggering an endless reapply loop.
 - Task 5: `Main.overview.visible` stays true during the `hiding` transition, so
   the module tracks the `showing` and `hiding` signals instead of reading
   `visible` on hide.
+- Task 2: CPU and network failures return `null` and render an em dash. The
+  module cancels the in-flight sample with a per-enable `Gio.Cancellable`,
+  ignores results from an older generation, and removes its timer by id.
 
 ## Known deferrals
 

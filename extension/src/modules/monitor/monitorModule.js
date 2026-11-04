@@ -19,10 +19,10 @@ import {MonitorSampler} from './monitorSampler.js';
 const ROLE = 'homescreen-monitor';
 const HISTORY_LENGTH = 30;
 
-function readText(path) {
+function readText(path, cancellable = null) {
     return new Promise((resolve, reject) => {
         const file = Gio.File.new_for_path(path);
-        file.load_contents_async(null, (source, result) => {
+        file.load_contents_async(cancellable, (source, result) => {
             try {
                 const [ok, contents] = source.load_contents_finish(result);
                 if (!ok) {
@@ -37,13 +37,13 @@ function readText(path) {
     });
 }
 
-function queryDisk(path) {
+function queryDisk(path, cancellable = null) {
     return new Promise((resolve, reject) => {
         const file = Gio.File.new_for_path(path);
         file.query_filesystem_info_async(
             'filesystem::size,filesystem::free',
             GLib.PRIORITY_DEFAULT,
-            null,
+            cancellable,
             (source, result) => {
                 try {
                     const info = source.query_filesystem_info_finish(result);
@@ -73,6 +73,8 @@ export class MonitorModule {
         this._timer = 0;
         this._active = false;
         this._sampling = false;
+        this._generation = 0;
+        this._cancellable = null;
     }
 
     enable(context) {
@@ -139,6 +141,8 @@ export class MonitorModule {
 
         this._syncVisibility();
         this._active = true;
+        this._generation++;
+        this._cancellable = new Gio.Cancellable();
         this._sample();
         this._restartTimer();
     }
@@ -159,19 +163,21 @@ export class MonitorModule {
     }
 
     async _sample() {
-        if (!this._active || this._sampling)
+        if (!this._active || this._sampling || !this._sampler)
             return;
 
+        const generation = this._generation;
         this._sampling = true;
         try {
-            const sample = await this._sampler.sample();
-            if (!this._active)
+            const sample = await this._sampler.sample(this._cancellable);
+            if (!this._active || generation !== this._generation)
                 return;
             this._render(sample);
         } catch (error) {
-            this._context.logger.error('monitor sample failed', error);
+            this._context?.logger.error('monitor sample failed', error);
         } finally {
-            this._sampling = false;
+            if (generation === this._generation)
+                this._sampling = false;
         }
     }
 
@@ -179,9 +185,11 @@ export class MonitorModule {
         const cpu = formatPercent(sample.cpu.percent);
         this._label.text = `CPU ${cpu}`;
 
-        this._history.push(sample.cpu.percent);
-        if (this._history.length > HISTORY_LENGTH)
-            this._history.shift();
+        if (Number.isFinite(sample.cpu.percent)) {
+            this._history.push(sample.cpu.percent);
+            if (this._history.length > HISTORY_LENGTH)
+                this._history.shift();
+        }
         this._area.queue_repaint();
 
         this._rows.cpu.label.text = `CPU: ${cpu}`;
@@ -239,6 +247,11 @@ export class MonitorModule {
 
     disable() {
         this._active = false;
+        this._generation++;
+        this._cancellable?.cancel();
+        this._cancellable = null;
+        if (this._timer && this._scope)
+            this._scope.removeSource(this._timer);
         this._timer = 0;
         this._sampling = false;
         this._button?.destroy();
