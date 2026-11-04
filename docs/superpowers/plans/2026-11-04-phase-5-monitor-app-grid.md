@@ -496,6 +496,21 @@ git commit -m "docs: record phase 5 monitor and app grid status"
 - Type consistency: `parseCpuStat` returns `{total, idle}`; `cpuUsage` consumes those objects; `buildAlphabeticalPages` returns arrays of `{id, name}` entries.
 - Review focus coverage: read failures (Task 1 catches each read), disable cleanup (Tasks 2, 4, 5), layout restore (Task 4), Launchpad callers (Task 4), overview blur visibility (Task 5).
 
+## Implementation corrections
+
+- Task 4: `IconGridLayout.adaptToSize()` returns early when `columns_per_page`,
+  `rows_per_page`, and the icon size already match. The module sets
+  `_fixedCols`, `_fixedRows`, and `fixedIconSize`, forces `_pageWidth` and
+  `_pageHeight` to -1, and lets `adaptToSize()` publish the new page size.
+- Task 4: labels are applied through `appDisplay._items`, because
+  `_grid.get_children()` returns page actors, not app icons.
+- Task 4: `Main.overview._overview.controls.appDisplay` may not exist at
+  extension enable. The module retries 20 times at 250 ms before logging an
+  error.
+- Task 5: `Main.overview.visible` stays true during the `hiding` transition, so
+  the module tracks the `showing` and `hiding` signals instead of reading
+  `visible` on hide.
+
 ## Known deferrals
 
 - App grid drag-to-reorder is not reimplemented; alphabetical mode suppresses layout persistence and restores the original layout on disable.

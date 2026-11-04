@@ -1,6 +1,6 @@
 # Homescreen: Design and Roadmap
 
-Status: Phase 4 implemented, live verification pending
+Status: Phase 5 implemented, live verification pending
 Date: 2026-11-03
 Target: Ubuntu 26.04, GNOME Shell 50.1, Wayland
 Scope: personal use, one machine
@@ -61,7 +61,7 @@ ubuntu homescreen/
   src/modules/visual/
   src/modules/tiling/
   src/modules/monitor/
-  src/modules/appgrid/
+  src/modules/appGrid/
   tests/
   scripts/
   docs/
@@ -119,7 +119,7 @@ Conflicts with WACK, Blur my Shell lockscreen blur, Live Lock Screen, Lock scree
 
 ### Visual
 
-Blur for panel, dock, and overview. Rounded panel and dock corners, opacity, shadows, and animation speed. Blur only while the surface is visible. No per-app blur in the first version.
+Blur for panel, dock, and overview wallpaper. Rounded panel and dock corners, opacity, shadows, and animation speed. Blur only while the surface is visible. Overview blur uses actor mode on the private background group and applies only while the overview is open. No per-app blur in the first version.
 
 ### Tiling
 
@@ -127,11 +127,11 @@ Keyboard snap layouts for halves, quarters, and full-width windows with configur
 
 ### System monitor
 
-CPU, memory, disk, network, and temperature when available. Two-second refresh by default, one second minimum. Sparkline in the panel and a details popover on click. Reads `/proc` and `/sys` asynchronously. No root and no external binaries.
+CPU, memory, disk, network, and temperature when available. The panel shows a CPU sparkline and a details popover. Refresh is two seconds by default with a one-second floor. Sampling reads `/proc/stat`, `/proc/meminfo`, `/proc/net/dev`, `/sys/class/thermal/thermal_zone0/temp`, and the root filesystem asynchronously. No root and no external binaries. Missing metrics render as an em dash.
 
 ### App grid and search
 
-Alphabetical app grid, adjustable rows, columns, icon size, labels, search provider toggles, and optional overview cleanup. This module uses private Shell APIs, so it is isolated and easy to disable.
+Alphabetical app grid with adjustable rows, columns, icon size, labels, a global remote-search toggle, and Launchpad mode. Alphabetical mode rewrites `app-picker-layout`, suppresses drag-to-reorder persistence while active, and restores the previous layout on disable. Launchpad mode only changes the default state of the overview toggle. The module uses private Shell APIs, is off by default, and is isolated so it can be disabled without affecting the rest of the extension.
 
 ## Mac-style dock specification
 
@@ -335,6 +335,8 @@ Phase 1 is the first usable milestone. The other modules are not allowed to dela
 Phase 3 implements panel and dock blur plus panel glass. Overview blur and Launchpad mode are deferred to Phase 5, where the app grid and overview are restructured. Motion presets remain deferred until they can be added without a second animation system.
 
 Phase 4 implements keyboard tiling for halves, quarters, and the full work area with configurable gaps. Drag-to-snap preview and snap assist are deferred because Mutter's tile preview and window-drag pipeline are private.
+
+Phase 5 implements the system monitor and app grid customization. The grid sorts alphabetically while enabled, drag-to-reorder remains stock, and Launchpad mode only changes the default overview state. Overview blur is opt-in and runs only while the overview is open.
 
 ## Acceptance criteria
 
