@@ -219,6 +219,32 @@
       <summary>Tile the focused window to the full work area</summary>
     </key>
 
+    <key name="monitor-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the system monitor</summary>
+    </key>
+    <key name="monitor-interval" type="i">
+      <default>2</default>
+      <range min="1" max="10"/>
+      <summary>Refresh interval in seconds</summary>
+    </key>
+    <key name="monitor-show-memory" type="b">
+      <default>true</default>
+      <summary>Show memory in the monitor menu</summary>
+    </key>
+    <key name="monitor-show-disk" type="b">
+      <default>true</default>
+      <summary>Show disk usage in the monitor menu</summary>
+    </key>
+    <key name="monitor-show-network" type="b">
+      <default>true</default>
+      <summary>Show network rates in the monitor menu</summary>
+    </key>
+    <key name="monitor-show-temperature" type="b">
+      <default>true</default>
+      <summary>Show temperature in the monitor menu</summary>
+    </key>
+
     <key name="diagnostics-json" type="s">
       <default>'{}'</default>
       <summary>Last module status snapshot</summary>

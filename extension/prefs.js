@@ -6,6 +6,7 @@ import {buildLockscreenPage} from './src/prefs/lockscreenPage.js';
 import {buildPanelPage} from './src/prefs/panelPage.js';
 import {buildVisualPage} from './src/prefs/visualPage.js';
 import {buildTilingPage} from './src/prefs/tilingPage.js';
+import {buildMonitorPage} from './src/prefs/monitorPage.js';
 
 export default class HomescreenPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
@@ -16,6 +17,7 @@ export default class HomescreenPreferences extends ExtensionPreferences {
         buildDockPage(window, settings);
         buildVisualPage(window, settings);
         buildTilingPage(window, settings);
+        buildMonitorPage(window, settings);
         buildDesktopPage(window, settings);
         buildLockscreenPage(window, settings);
     }
