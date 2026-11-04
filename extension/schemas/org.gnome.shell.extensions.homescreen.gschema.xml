@@ -245,6 +245,42 @@
       <summary>Show temperature in the monitor menu</summary>
     </key>
 
+    <key name="app-grid-enabled" type="b">
+      <default>false</default>
+      <summary>Enable app grid customization</summary>
+    </key>
+    <key name="app-grid-alphabetical" type="b">
+      <default>true</default>
+      <summary>Sort the app grid alphabetically</summary>
+    </key>
+    <key name="app-grid-rows" type="i">
+      <default>4</default>
+      <range min="2" max="8"/>
+      <summary>App grid rows per page</summary>
+    </key>
+    <key name="app-grid-columns" type="i">
+      <default>6</default>
+      <range min="2" max="10"/>
+      <summary>App grid columns per page</summary>
+    </key>
+    <key name="app-grid-icon-size" type="i">
+      <default>64</default>
+      <range min="32" max="96"/>
+      <summary>App grid icon size in pixels</summary>
+    </key>
+    <key name="app-grid-show-labels" type="b">
+      <default>true</default>
+      <summary>Show app labels</summary>
+    </key>
+    <key name="app-grid-disable-remote-search" type="b">
+      <default>false</default>
+      <summary>Disable remote search providers</summary>
+    </key>
+    <key name="app-grid-launchpad" type="b">
+      <default>false</default>
+      <summary>Open the app grid by default from the overview toggle</summary>
+    </key>
+
     <key name="diagnostics-json" type="s">
       <default>'{}'</default>
       <summary>Last module status snapshot</summary>

@@ -10,6 +10,7 @@ import {LockscreenModule} from './src/modules/lockscreen/lockscreenModule.js';
 import {VisualModule} from './src/modules/visual/visualModule.js';
 import {TilingModule} from './src/modules/tiling/tilingModule.js';
 import {MonitorModule} from './src/modules/monitor/monitorModule.js';
+import {AppGridModule} from './src/modules/appGrid/appGridModule.js';
 
 export default class HomescreenExtension extends Extension {
     enable() {
@@ -25,6 +26,7 @@ export default class HomescreenExtension extends Extension {
         this._registry.add('visual', new VisualModule(), 'visual-enabled');
         this._registry.add('tiling', new TilingModule(), 'tiling-enabled');
         this._registry.add('monitor', new MonitorModule(), 'monitor-enabled');
+        this._registry.add('app-grid', new AppGridModule(), 'app-grid-enabled');
         this._registry.add('desktop', new DesktopModule(), 'desktop-enabled');
         this._registry.add('lockscreen', new LockscreenModule(), 'lockscreen-enabled',
             {sessionModes: ['unlock-dialog']});
