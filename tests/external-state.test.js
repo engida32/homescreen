@@ -1,0 +1,85 @@
+import {assertEqual, waitFor} from './helpers.js';
+import {
+    restoreBooleanIfUnchanged,
+    restoreStringIfUnchanged,
+    snapshotBoolean,
+    snapshotString,
+} from '../extension/src/modules/desktop/externalState.js';
+import {CAFFEINE_FLAGS, CaffeineInhibitor} from '../extension/src/modules/desktop/caffeine.js';
+
+class FakeSettings {
+    constructor(values) {
+        this.values = {...values};
+    }
+
+    get_boolean(key) {
+        return this.values[key];
+    }
+
+    set_boolean(key, value) {
+        this.values[key] = value;
+    }
+
+    get_string(key) {
+        return this.values[key];
+    }
+
+    set_string(key, value) {
+        this.values[key] = value;
+    }
+}
+
+const notifications = new FakeSettings({'show-banners': true});
+const bannerSnapshot = snapshotBoolean(notifications, 'show-banners');
+notifications.set_boolean('show-banners', false);
+restoreBooleanIfUnchanged(notifications, 'show-banners', false, bannerSnapshot);
+assertEqual(notifications.get_boolean('show-banners'), true, 'banner restored');
+
+const changed = new FakeSettings({'show-banners': true});
+const changedSnapshot = snapshotBoolean(changed, 'show-banners');
+changed.set_boolean('show-banners', false);
+changed.set_boolean('show-banners', true);
+restoreBooleanIfUnchanged(changed, 'show-banners', false, changedSnapshot);
+assertEqual(changed.get_boolean('show-banners'), true, 'changed banner kept');
+
+const wm = new FakeSettings({'button-layout': 'appmenu:minimize,maximize,close'});
+const layoutSnapshot = snapshotString(wm, 'button-layout');
+wm.set_string('button-layout', 'appmenu:close,minimize,maximize');
+restoreStringIfUnchanged(wm, 'button-layout',
+    'appmenu:close,minimize,maximize', layoutSnapshot);
+assertEqual(wm.get_string('button-layout'),
+    'appmenu:minimize,maximize,close', 'layout restored');
+
+assertEqual(CAFFEINE_FLAGS, 12, 'caffeine flags');
+
+const calls = [];
+const inhibitor = new CaffeineInhibitor(async (method, params) => {
+    calls.push([method, params.deepUnpack()]);
+    return method === 'Inhibit' ? 42 : 0;
+}, {appId: 'test', reason: 'testing'});
+const cookie = waitFor(inhibitor.inhibit());
+assertEqual(cookie, 42, 'inhibit cookie');
+assertEqual(calls[0][0], 'Inhibit', 'inhibit called');
+assertEqual(calls[0][1][3], 12, 'inhibit flags');
+waitFor(inhibitor.release());
+assertEqual(calls[1][0], 'Uninhibit', 'uninhibit called');
+assertEqual(calls[1][1][0], 42, 'uninhibit cookie');
+
+const lateCalls = [];
+let resolveInhibit;
+const late = new CaffeineInhibitor((method, params) => {
+    lateCalls.push(method);
+    if (method === 'Inhibit') {
+        return new Promise(resolve => {
+            resolveInhibit = resolve;
+        });
+    }
+    return Promise.resolve(0);
+}, {appId: 'test', reason: 'late'});
+const pending = late.inhibit();
+waitFor(late.release());
+resolveInhibit(7);
+assertEqual(waitFor(pending), 0, 'late inhibit discarded');
+assertEqual(lateCalls.includes('Uninhibit'), true, 'late inhibit released');
+
+print('external state tests passed');
