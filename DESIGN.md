@@ -1,6 +1,6 @@
 # Homescreen: Design and Roadmap
 
-Status: Phase 5 implemented, live verification pending
+Status: Phase 6 implemented, live verification pending
 Date: 2026-11-03
 Target: Ubuntu 26.04, GNOME Shell 50.1, Wayland
 Scope: personal use, one machine
@@ -337,6 +337,8 @@ Phase 3 implements panel and dock blur plus panel glass. Overview blur and Launc
 Phase 4 implements keyboard tiling for halves, quarters, and the full work area with configurable gaps. Drag-to-snap preview and snap assist are deferred because Mutter's tile preview and window-drag pipeline are private.
 
 Phase 5 implements the system monitor and app grid customization. The grid sorts alphabetically while enabled; drag-to-reorder remains stock outside alphabetical mode, which suppresses layout persistence. Launchpad mode only changes the default overview state. Overview blur is opt-in and runs only while the overview is open.
+
+Phase 6 implements presets, readable settings export and import, per-module and full reset, live diagnostics, the panel workspace indicator, notification mute, Caffeine idle/suspend inhibition, macOS window button order, and the About page. Applying a preset, import, or reset restarts modules through a reload request. Full reset preserves user presets. Window corner rounding remains deferred.
 
 ## Acceptance criteria
 
