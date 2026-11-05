@@ -3,6 +3,7 @@ import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Ex
 import {buildDesktopPage} from './src/prefs/desktopPage.js';
 import {buildDockPage} from './src/prefs/dockPage.js';
 import {buildLockscreenPage} from './src/prefs/lockscreenPage.js';
+import {buildPresetsPage} from './src/prefs/presetsPage.js';
 import {buildPanelPage} from './src/prefs/panelPage.js';
 import {buildVisualPage} from './src/prefs/visualPage.js';
 import {buildTilingPage} from './src/prefs/tilingPage.js';
@@ -22,5 +23,6 @@ export default class HomescreenPreferences extends ExtensionPreferences {
         buildAppGridPage(window, settings);
         buildDesktopPage(window, settings);
         buildLockscreenPage(window, settings);
+        buildPresetsPage(window, settings);
     }
 }
