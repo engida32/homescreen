@@ -147,10 +147,10 @@ export class DesktopModule {
             return;
         if (this._settings.get_boolean('desktop-caffeine')) {
             this._caffeine.inhibit().catch(error =>
-                this._context.logger.error('caffeine inhibit failed', error));
+                this._context?.logger.error('caffeine inhibit failed', error));
         } else {
             this._caffeine.release().catch(error =>
-                this._context.logger.error('caffeine release failed', error));
+                this._context?.logger.error('caffeine release failed', error));
         }
     }
 
