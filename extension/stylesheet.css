@@ -7,6 +7,11 @@
     background-color: rgba(28, 28, 30, 0.72) !important;
 }
 
+#panel.homescreen-panel-blurred,
+#panel.homescreen-panel-blurred:overview {
+    background-color: rgba(28, 28, 30, 0.32) !important;
+}
+
 .homescreen-dock {
     margin: 0;
 }
@@ -57,4 +62,35 @@
     border-radius: 6px;
     padding: 3px 8px;
     font-size: 11px;
+}
+
+.homescreen-dock-vertical .app-grid-running-dot {
+    margin-bottom: 0;
+    margin-right: 2px;
+}
+
+.homescreen-lockscreen-clock-time {
+    font-size: 96px;
+    font-weight: 200;
+    color: #ffffff;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
+}
+
+.homescreen-lockscreen-clock-date {
+    font-size: 20px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.86);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+}
+
+.homescreen-lockscreen-message {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.72);
+    margin-top: 6px;
+}
+
+.homescreen-lockscreen-wallpaper {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }

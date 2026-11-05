@@ -3,13 +3,19 @@ import {Logger} from './logger.js';
 import {ModuleScope} from './resources.js';
 
 export class Context {
-    constructor(extension, settings) {
+    constructor(extension, settings, options = {}) {
         this.extension = extension;
         this.settings = settings;
+        this.sessionMode = options.sessionMode ?? null;
+        this.extensionManager = options.extensionManager ?? null;
         this.logger = new Logger();
         this.diagnostics = new Diagnostics(settings, this.logger);
         this._modules = new Map();
         this._scopes = new Set();
+    }
+
+    get currentMode() {
+        return this.sessionMode?.currentMode ?? 'user';
     }
 
     scope(name) {

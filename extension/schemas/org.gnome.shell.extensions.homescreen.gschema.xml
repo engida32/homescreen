@@ -50,9 +50,14 @@
       <summary>Enable the dock module</summary>
     </key>
     <key name="dock-position" type="s">
+      <choices>
+        <choice value='bottom'/>
+        <choice value='left'/>
+        <choice value='right'/>
+      </choices>
       <default>'bottom'</default>
       <summary>Dock position</summary>
-      <description>Phase 1 uses bottom. left and right are reserved for the dock v2 plan.</description>
+      <description>One of bottom, left, or right.</description>
     </key>
     <key name="dock-icon-size" type="i">
       <default>52</default>
@@ -122,6 +127,162 @@
     <key name="desktop-show-desktop-shortcut" type="as">
       <default>[]</default>
       <summary>Show desktop shortcut</summary>
+    </key>
+
+    <key name="lockscreen-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the lockscreen module</summary>
+    </key>
+    <key name="lockscreen-clock-format" type="s">
+      <default>'%H:%M'</default>
+      <summary>Lockscreen clock format</summary>
+    </key>
+    <key name="lockscreen-date-format" type="s">
+      <default>'%A, %B %-d'</default>
+      <summary>Lockscreen date format</summary>
+    </key>
+    <key name="lockscreen-message" type="s">
+      <default>''</default>
+      <summary>Lockscreen message</summary>
+    </key>
+    <key name="lockscreen-wallpaper-uri" type="s">
+      <default>''</default>
+      <summary>Lockscreen wallpaper URI</summary>
+    </key>
+
+    <key name="visual-enabled" type="b">
+      <default>false</default>
+      <summary>Enable visual effects</summary>
+    </key>
+    <key name="visual-blur-panel" type="b">
+      <default>false</default>
+      <summary>Blur behind the panel</summary>
+    </key>
+    <key name="visual-blur-dock" type="b">
+      <default>false</default>
+      <summary>Blur behind the dock</summary>
+    </key>
+    <key name="visual-blur-radius" type="i">
+      <default>30</default>
+      <range min="8" max="64"/>
+      <summary>Blur radius in pixels</summary>
+    </key>
+    <key name="visual-blur-brightness" type="d">
+      <default>0.65</default>
+      <range min="0.0" max="1.0"/>
+      <summary>Blur brightness</summary>
+    </key>
+    <key name="visual-blur-overview" type="b">
+      <default>false</default>
+      <summary>Blur the wallpaper behind the overview</summary>
+    </key>
+
+    <key name="tiling-enabled" type="b">
+      <default>false</default>
+      <summary>Enable keyboard tiling</summary>
+    </key>
+    <key name="tiling-gap" type="i">
+      <default>8</default>
+      <range min="0" max="32"/>
+      <summary>Gap between tiled windows and screen edges</summary>
+    </key>
+    <key name="tiling-half-left-shortcut" type="as">
+      <default><![CDATA[['<Super><Control>Left']]]></default>
+      <summary>Tile the focused window to the left half</summary>
+    </key>
+    <key name="tiling-half-right-shortcut" type="as">
+      <default><![CDATA[['<Super><Control>Right']]]></default>
+      <summary>Tile the focused window to the right half</summary>
+    </key>
+    <key name="tiling-half-top-shortcut" type="as">
+      <default><![CDATA[['<Super><Control>Up']]]></default>
+      <summary>Tile the focused window to the top half</summary>
+    </key>
+    <key name="tiling-half-bottom-shortcut" type="as">
+      <default><![CDATA[['<Super><Control>Down']]]></default>
+      <summary>Tile the focused window to the bottom half</summary>
+    </key>
+    <key name="tiling-quarter-top-left-shortcut" type="as">
+      <default><![CDATA[['<Super><Control><Alt>1']]]></default>
+      <summary>Tile the focused window to the top-left quarter</summary>
+    </key>
+    <key name="tiling-quarter-top-right-shortcut" type="as">
+      <default><![CDATA[['<Super><Control><Alt>2']]]></default>
+      <summary>Tile the focused window to the top-right quarter</summary>
+    </key>
+    <key name="tiling-quarter-bottom-left-shortcut" type="as">
+      <default><![CDATA[['<Super><Control><Alt>3']]]></default>
+      <summary>Tile the focused window to the bottom-left quarter</summary>
+    </key>
+    <key name="tiling-quarter-bottom-right-shortcut" type="as">
+      <default><![CDATA[['<Super><Control><Alt>4']]]></default>
+      <summary>Tile the focused window to the bottom-right quarter</summary>
+    </key>
+    <key name="tiling-full-shortcut" type="as">
+      <default><![CDATA[['<Super><Control><Alt>f']]]></default>
+      <summary>Tile the focused window to the full work area</summary>
+    </key>
+
+    <key name="monitor-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the system monitor</summary>
+    </key>
+    <key name="monitor-interval" type="i">
+      <default>2</default>
+      <range min="1" max="10"/>
+      <summary>Refresh interval in seconds</summary>
+    </key>
+    <key name="monitor-show-memory" type="b">
+      <default>true</default>
+      <summary>Show memory in the monitor menu</summary>
+    </key>
+    <key name="monitor-show-disk" type="b">
+      <default>true</default>
+      <summary>Show disk usage in the monitor menu</summary>
+    </key>
+    <key name="monitor-show-network" type="b">
+      <default>true</default>
+      <summary>Show network rates in the monitor menu</summary>
+    </key>
+    <key name="monitor-show-temperature" type="b">
+      <default>true</default>
+      <summary>Show temperature in the monitor menu</summary>
+    </key>
+
+    <key name="app-grid-enabled" type="b">
+      <default>false</default>
+      <summary>Enable app grid customization</summary>
+    </key>
+    <key name="app-grid-alphabetical" type="b">
+      <default>true</default>
+      <summary>Sort the app grid alphabetically</summary>
+    </key>
+    <key name="app-grid-rows" type="i">
+      <default>4</default>
+      <range min="2" max="8"/>
+      <summary>App grid rows per page</summary>
+    </key>
+    <key name="app-grid-columns" type="i">
+      <default>6</default>
+      <range min="2" max="10"/>
+      <summary>App grid columns per page</summary>
+    </key>
+    <key name="app-grid-icon-size" type="i">
+      <default>64</default>
+      <range min="32" max="96"/>
+      <summary>App grid icon size in pixels</summary>
+    </key>
+    <key name="app-grid-show-labels" type="b">
+      <default>true</default>
+      <summary>Show app labels</summary>
+    </key>
+    <key name="app-grid-disable-remote-search" type="b">
+      <default>false</default>
+      <summary>Disable remote search providers</summary>
+    </key>
+    <key name="app-grid-launchpad" type="b">
+      <default>false</default>
+      <summary>Open the app grid by default from the overview toggle</summary>
     </key>
 
     <key name="diagnostics-json" type="s">

@@ -91,3 +91,17 @@ export function shortcutRow(settings, key, title) {
     });
     return row;
 }
+
+export function textRow(settings, key, title, subtitle = '') {
+    const row = new Adw.EntryRow({title, show_apply_button: true});
+    if (subtitle)
+        row.tooltip_text = subtitle;
+    row.text = settings.get_string(key);
+    row.connect('apply', () => settings.set_string(key, row.text));
+    settings.connect(`changed::${key}`, () => {
+        const value = settings.get_string(key);
+        if (row.text !== value)
+            row.text = value;
+    });
+    return row;
+}

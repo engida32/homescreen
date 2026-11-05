@@ -10,12 +10,11 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {HomescreenDockIcon} from './dockIcon.js';
 import {dockBackgroundStyle} from './dockStyle.js';
 import {
-    dockHeight,
-    dockOrigin,
-    dockWidth,
-    hiddenDockY,
+    dockBounds,
+    hiddenDockPosition,
+    pointerAtDockEdge,
     rectsOverlap,
-    slotCenter,
+    slotCenterForAxis,
 } from './layout.js';
 import {scalesForCenters} from './magnification.js';
 import {shouldShowDock} from './visibility.js';
@@ -44,8 +43,11 @@ export class DockModule {
         this._menuOpen = false;
         this._windowSignals = new Map();
         this._iconMenuSignals = new Map();
-        this._shownY = 0;
-        this._hiddenY = 0;
+        this._shown = {x: 0, y: 0};
+        this._hidden = {x: 0, y: 0};
+        this._edge = 'bottom';
+        this._vertical = false;
+        this._blurred = false;
     }
 
     enable(context) {
@@ -88,6 +90,7 @@ export class DockModule {
             this._scope.signal(this._settings, 'changed::dock-icon-size', () => this._rebuild());
             this._scope.signal(this._settings, 'changed::dock-spacing', () => this._rebuild());
             this._scope.signal(this._settings, 'changed::dock-padding', () => this._rebuild());
+            this._scope.signal(this._settings, 'changed::dock-position', () => this._position());
             this._scope.signal(this._settings, 'changed::dock-margin', () => this._position());
             this._scope.signal(this._settings, 'changed::dock-radius', () => this._position());
             this._scope.signal(this._settings, 'changed::dock-opacity', () => this._position());
@@ -165,9 +168,7 @@ export class DockModule {
         if (!monitor)
             return false;
         const [x, y] = global.get_pointer();
-        return x >= monitor.x &&
-            x < monitor.x + monitor.width &&
-            y >= monitor.y + monitor.height - 2;
+        return pointerAtDockEdge(this._edge, monitor, x, y);
     }
 
     _isPointerOverDock() {
@@ -189,8 +190,8 @@ export class DockModule {
         const monitorIndex = Main.layoutManager.primaryIndex;
         const activeWorkspace = global.workspace_manager.get_active_workspace();
         const rect = {
-            x: this._container.x,
-            y: this._shownY,
+            x: this._shown.x,
+            y: this._shown.y,
             width: this._container.width,
             height: this._container.height,
         };
@@ -240,16 +241,19 @@ export class DockModule {
         if (!this._container || this._forcedHidden || this._icons.length === 0)
             return;
         this._cancelHide();
-        if (this._container.visible && this._container.y === this._shownY)
+        if (this._container.visible &&
+            this._container.x === this._shown.x &&
+            this._container.y === this._shown.y)
             return;
         this._container.remove_all_transitions();
         this._container.show();
         if (!animate) {
-            this._container.set_position(this._container.x, this._shownY);
+            this._container.set_position(this._shown.x, this._shown.y);
             return;
         }
         this._container.ease({
-            y: this._shownY,
+            x: this._shown.x,
+            y: this._shown.y,
             duration: 140,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         });
@@ -259,20 +263,25 @@ export class DockModule {
         if (!this._container)
             return;
         this._cancelHide();
-        if (!this._container.visible && this._container.y === this._hiddenY)
+        if (!this._container.visible &&
+            this._container.x === this._hidden.x &&
+            this._container.y === this._hidden.y)
             return;
         this._container.remove_all_transitions();
         if (!animate) {
-            this._container.set_position(this._container.x, this._hiddenY);
+            this._container.set_position(this._hidden.x, this._hidden.y);
             this._container.hide();
             return;
         }
         this._container.ease({
-            y: this._hiddenY,
+            x: this._hidden.x,
+            y: this._hidden.y,
             duration: 180,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
-                if (this._container && this._container.y === this._hiddenY)
+                if (this._container &&
+                    this._container.x === this._hidden.x &&
+                    this._container.y === this._hidden.y)
                     this._container.hide();
             },
         });
@@ -365,9 +374,13 @@ export class DockModule {
     }
 
     _resetMagnification() {
+        const pivotX = this._vertical
+            ? (this._edge === 'right' ? 1.0 : 0.0)
+            : 0.5;
+        const pivotY = this._vertical ? 0.5 : 1.0;
         for (const icon of this._icons) {
             icon.remove_all_transitions();
-            icon.set_pivot_point(0.5, 1.0);
+            icon.set_pivot_point(pivotX, pivotY);
             icon.set_scale(1, 1);
         }
     }
@@ -382,22 +395,28 @@ export class DockModule {
             this._resetMagnification();
             return;
         }
-        const [pointerX] = global.get_pointer();
-        const localX = pointerX - this._container.x;
+        const [pointerX, pointerY] = global.get_pointer();
+        const local = this._vertical
+            ? pointerY - this._container.y
+            : pointerX - this._container.x;
         const iconSize = this._settings.get_int('dock-icon-size');
         const spacing = this._settings.get_int('dock-spacing');
         const padding = this._settings.get_int('dock-padding');
         const centers = this._icons.map((_icon, index) =>
-            slotCenter(index, iconSize, spacing, padding));
+            slotCenterForAxis(index, iconSize, spacing, padding, this._vertical));
         const scales = scalesForCenters(
-            localX,
+            local,
             centers,
             iconSize + spacing,
             this._settings.get_double('dock-magnification-strength'),
             1.4
         );
+        const pivotX = this._vertical
+            ? (this._edge === 'right' ? 1.0 : 0.0)
+            : 0.5;
+        const pivotY = this._vertical ? 0.5 : 1.0;
         this._icons.forEach((icon, index) => {
-            icon.set_pivot_point(0.5, 1.0);
+            icon.set_pivot_point(pivotX, pivotY);
             icon.set_scale(scales[index], scales[index]);
         });
     }
@@ -464,11 +483,25 @@ export class DockModule {
         return icon;
     }
 
+    getBackgroundActor() {
+        return this._background;
+    }
+
+    setBlurred(blurred) {
+        if (this._blurred === blurred)
+            return;
+        this._blurred = blurred;
+        this._position();
+    }
+
     _position() {
         if (!this._container)
             return;
 
-        this._background.set_style(dockBackgroundStyle(this._settings.get_int('dock-radius'), this._settings.get_double('dock-opacity')));
+        this._background.set_style(dockBackgroundStyle(
+            this._settings.get_int('dock-radius'),
+            this._settings.get_double('dock-opacity'),
+            this._blurred));
 
         const monitor = Main.layoutManager.primaryMonitor;
         if (!monitor)
@@ -478,16 +511,31 @@ export class DockModule {
         const spacing = this._settings.get_int('dock-spacing');
         const padding = this._settings.get_int('dock-padding');
         const margin = this._settings.get_int('dock-margin');
-        const width = dockWidth(this._icons.length, iconSize, spacing, padding);
-        const height = dockHeight(iconSize, padding);
-        const origin = dockOrigin(monitor, width, height, margin);
+        const edge = this._settings.get_string('dock-position');
+        const vertical = edge === 'left' || edge === 'right';
+        const bounds = dockBounds(edge, monitor, this._icons.length,
+            iconSize, spacing, padding, margin);
 
-        this._shownY = origin.y;
-        this._hiddenY = hiddenDockY(monitor, margin);
+        this._edge = edge;
+        this._vertical = vertical;
+        this._shown = {x: bounds.x, y: bounds.y};
+        this._hidden = hiddenDockPosition(edge, monitor, margin, bounds);
+
+        this._box.set_orientation(vertical
+            ? Clutter.Orientation.VERTICAL
+            : Clutter.Orientation.HORIZONTAL);
         this._box.set_style(`spacing: ${spacing}px; padding: ${padding}px;`);
-        this._container.set_size(width, height);
+        this._container.set_size(bounds.width, bounds.height);
+
+        if (this._vertical)
+            this._container.add_style_class_name('homescreen-dock-vertical');
+        else
+            this._container.remove_style_class_name('homescreen-dock-vertical');
+
         const shown = this._shouldStayShown();
-        this._container.set_position(origin.x, shown ? this._shownY : this._hiddenY);
+        this._container.set_position(
+            shown ? this._shown.x : this._hidden.x,
+            shown ? this._shown.y : this._hidden.y);
         this._container.visible = shown;
         this._updateDockVisibility();
     }
@@ -505,6 +553,7 @@ export class DockModule {
         this._cancelHide();
         this._overviewVisible = false;
         this._forcedHidden = false;
+        this._blurred = false;
         if (this._container) {
             Main.layoutManager.removeChrome(this._container);
             this._container.destroy();
