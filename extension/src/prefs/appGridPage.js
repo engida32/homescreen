@@ -1,6 +1,6 @@
 import Adw from 'gi://Adw';
 
-import {spinRow, switchRow} from './helpers.js';
+import {resetRow, spinRow, switchRow} from './helpers.js';
 
 export function buildAppGridPage(window, settings) {
     const page = new Adw.PreferencesPage({
@@ -33,6 +33,10 @@ export function buildAppGridPage(window, settings) {
     search.add(switchRow(settings, 'app-grid-disable-remote-search',
         'Disable remote search',
         'Turns off external search providers while the module is enabled.'));
+
+    const reset = new Adw.PreferencesGroup({title: 'Reset'});
+    page.add(reset);
+    reset.add(resetRow(settings, 'app-grid'));
 
     return page;
 }

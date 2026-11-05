@@ -1,6 +1,6 @@
 import Adw from 'gi://Adw';
 
-import {spinRow, switchRow} from './helpers.js';
+import {resetRow, spinRow, switchRow} from './helpers.js';
 
 export function buildMonitorPage(window, settings) {
     const page = new Adw.PreferencesPage({
@@ -25,6 +25,10 @@ export function buildMonitorPage(window, settings) {
     metrics.add(switchRow(settings, 'monitor-show-disk', 'Show disk usage'));
     metrics.add(switchRow(settings, 'monitor-show-network', 'Show network rates'));
     metrics.add(switchRow(settings, 'monitor-show-temperature', 'Show temperature'));
+
+    const reset = new Adw.PreferencesGroup({title: 'Reset'});
+    page.add(reset);
+    reset.add(resetRow(settings, 'monitor'));
 
     return page;
 }

@@ -1,6 +1,6 @@
 import Adw from 'gi://Adw';
 
-import {shortcutRow, switchRow} from './helpers.js';
+import {resetRow, shortcutRow, switchRow} from './helpers.js';
 
 export function buildDesktopPage(window, settings) {
     const page = new Adw.PreferencesPage({
@@ -22,6 +22,19 @@ export function buildDesktopPage(window, settings) {
         'Hide the panel and dock.'));
     desktop.add(shortcutRow(settings, 'desktop-show-desktop-shortcut',
         'Show desktop shortcut'));
+
+    const system = new Adw.PreferencesGroup({title: 'System'});
+    page.add(system);
+    system.add(switchRow(settings, 'desktop-mute-notifications',
+        'Mute notifications', 'Hide notification banners while enabled.'));
+    system.add(switchRow(settings, 'desktop-caffeine',
+        'Caffeine', 'Inhibit idle and suspend while enabled.'));
+    system.add(switchRow(settings, 'desktop-macos-controls',
+        'macOS window controls', 'Use close, minimize, maximize order.'));
+
+    const reset = new Adw.PreferencesGroup({title: 'Reset'});
+    page.add(reset);
+    reset.add(resetRow(settings, 'desktop'));
 
     return page;
 }

@@ -1,6 +1,6 @@
 import Adw from 'gi://Adw';
 
-import {comboRow, spinRow, spinRowDouble, switchRow} from './helpers.js';
+import {comboRow, resetRow, spinRow, spinRowDouble, switchRow} from './helpers.js';
 import {createConflictBanner, revealIfEnabled} from './conflicts.js';
 
 export function buildDockPage(window, settings) {
@@ -56,6 +56,10 @@ export function buildDockPage(window, settings) {
         'How strongly icons scale near the pointer.', 0.0, 0.45, 0.01));
     motion.add(spinRow(settings, 'dock-hide-delay', 'Hide delay',
         'Milliseconds after the pointer leaves.', 0, 2000, 50));
+
+    const reset = new Adw.PreferencesGroup({title: 'Reset'});
+    page.add(reset);
+    reset.add(resetRow(settings, 'dock'));
 
     return page;
 }
