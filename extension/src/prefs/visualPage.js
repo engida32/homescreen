@@ -1,6 +1,6 @@
 import Adw from 'gi://Adw';
 
-import {spinRow, spinRowDouble, switchRow} from './helpers.js';
+import {resetRow, spinRow, spinRowDouble, switchRow} from './helpers.js';
 
 export function buildVisualPage(window, settings) {
     const page = new Adw.PreferencesPage({
@@ -26,6 +26,10 @@ export function buildVisualPage(window, settings) {
         'Pixels. Higher values are softer and more expensive.', 8, 64, 1));
     blur.add(spinRowDouble(settings, 'visual-blur-brightness', 'Blur brightness',
         'Darkens or brightens the blurred surface.', 0.0, 1.0, 0.01));
+
+    const reset = new Adw.PreferencesGroup({title: 'Reset'});
+    page.add(reset);
+    reset.add(resetRow(settings, 'visual'));
 
     return page;
 }

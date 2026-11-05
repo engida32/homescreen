@@ -7,6 +7,7 @@ import * as Layout from 'resource:///org/gnome/shell/ui/layout.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import {rectsOverlap, shouldHidePanel, targetY} from './geometry.js';
+import {WorkspaceIndicator} from './workspaceIndicator.js';
 
 const ACTION_MODE = Shell.ActionMode.NORMAL;
 const WINDOW_SIGNALS = [
@@ -36,6 +37,7 @@ export class PanelModule {
         this._windowSignals = new Map();
         this._affectsStruts = false;
         this._keybindingBound = false;
+        this._workspaceIndicator = null;
     }
 
     enable(context) {
@@ -63,6 +65,9 @@ export class PanelModule {
             this._scope.signal(this._settings, 'changed::panel-show-in-overview', () => this._updateMode());
             this._scope.signal(this._settings, 'changed::panel-show-fullscreen', () => this._updateMode());
             this._scope.signal(this._settings, 'changed::panel-hide-delay', () => this._scheduleHide());
+            this._scope.signal(this._settings,
+                'changed::panel-show-workspace-indicator',
+                () => this._syncWorkspaceIndicator());
 
             this._scope.signal(global.display, 'window-created', (_display, window) => {
                 this._trackWindow(window);
@@ -95,6 +100,7 @@ export class PanelModule {
             });
 
             this._bindShortcut();
+            this._syncWorkspaceIndicator();
         } catch (error) {
             this._rollbackEnable();
             throw error;
@@ -110,6 +116,17 @@ export class PanelModule {
             this._hide(false);
         } else {
             this._updateMode();
+        }
+    }
+
+    _syncWorkspaceIndicator() {
+        const enabled = this._settings.get_boolean(
+            'panel-show-workspace-indicator');
+        if (enabled && !this._workspaceIndicator)
+            this._workspaceIndicator = new WorkspaceIndicator(this._scope);
+        else if (!enabled && this._workspaceIndicator) {
+            this._workspaceIndicator.destroy();
+            this._workspaceIndicator = null;
         }
     }
 
@@ -431,6 +448,12 @@ export class PanelModule {
 
     _rollbackEnable() {
         try {
+            this._workspaceIndicator?.destroy();
+        } catch {
+            // Best-effort cleanup.
+        }
+        this._workspaceIndicator = null;
+        try {
             this._cancelHide();
         } catch {
             // Best-effort cleanup.
@@ -513,6 +536,8 @@ export class PanelModule {
         this._setUnredirectDisabled(false);
         this._hidden = false;
         this._forcedHidden = false;
+        this._workspaceIndicator?.destroy();
+        this._workspaceIndicator = null;
         this._panelBox.remove_all_transitions();
         this._panelBox.show();
         this._panelBox.y = this._baseY;

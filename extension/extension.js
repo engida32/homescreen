@@ -31,11 +31,23 @@ export default class HomescreenExtension extends Extension {
         this._registry.add('lockscreen', new LockscreenModule(), 'lockscreen-enabled',
             {sessionModes: ['unlock-dialog']});
 
+        this._settingsSignals = [
+            this._settings.connect('changed::reload-request',
+                () => this._registry.reload()),
+            this._settings.connect('changed::diagnostics-request',
+                () => this._context.diagnostics.refresh(
+                    this._context.resourceCounts())),
+        ];
+
         this._sessionSignal = Main.sessionMode.connect('updated', () => this._registry.sync());
         this._registry.enableAll();
     }
 
     disable() {
+        for (const id of this._settingsSignals ?? [])
+            this._settings.disconnect(id);
+        this._settingsSignals = [];
+
         if (this._sessionSignal) {
             Main.sessionMode.disconnect(this._sessionSignal);
             this._sessionSignal = 0;

@@ -2,7 +2,7 @@
 
 A personal GNOME Shell extension that combines a hideable top panel, a floating dock, and a clean desktop in one codebase and one preferences window.
 
-Status: Phase 5 is implemented and tested headlessly. It is not published on extensions.gnome.org yet, and the live Wayland matrix is still pending.
+Status: Phase 6 is implemented and tested headlessly. It is not published on extensions.gnome.org yet, and the live Wayland matrix is still pending.
 
 ## Features
 
@@ -16,6 +16,11 @@ Status: Phase 5 is implemented and tested headlessly. It is not published on ext
 - Opt-in keyboard tiling for halves, quarters, and the full work area, with configurable gaps.
 - A panel system monitor for CPU, memory, disk, network, and thermal zone 0 temperature, with a sparkline and details popover.
 - An optional alphabetical app grid with adjustable rows, columns, icon size, labels, a remote-search toggle, and Launchpad mode.
+- Five built-in presets and user presets, with readable JSON export and import.
+- Per-module and full reset, with the running extension reloading modules immediately.
+- A diagnostics page with module status, per-module signal and source counts, and recent log entries.
+- An optional panel workspace indicator.
+- Optional notification mute, Caffeine idle/suspend inhibition, and macOS window button order.
 - Detect Ubuntu Dock and Tiling Assistant, explain the conflict, and offer one-click disable instead of silently fighting them.
 - Panel, dock, visual, tiling, monitor, app grid, desktop, and lockscreen preferences in a native GTK4 preferences window.
 - Disable restores the stock panel struts and background, destroys the dock actor, restores DING values, releases the Show Desktop keybinding, resets focus mode, restores the app grid layout and overview behavior, and destroys the monitor indicator.
@@ -44,7 +49,7 @@ make uninstall
 
 ## Preferences
 
-Open the extension preferences from GNOME Extensions or Extension Manager. The window has eight pages:
+Open the extension preferences from GNOME Extensions or Extension Manager. The window has eleven pages:
 
 - Panel: enable, hide mode, intellihide, and related timing.
 - Dock: enable, position, autohide, intellihide, size, spacing, padding, margin, radius, opacity, magnification, strength, and hide delay.
@@ -54,6 +59,9 @@ Open the extension preferences from GNOME Extensions or Extension Manager. The w
 - App Grid: enable, alphabetical sort, Launchpad mode, rows, columns, icon size, labels, and remote search.
 - Desktop: enable, hide icons, focus mode, and the Show Desktop shortcut.
 - Lockscreen: enable, clock and date formats, message, and wallpaper URI.
+- Presets: built-in presets, user presets, export, import, and full reset.
+- Diagnostics: module status, resource counts, recent log entries, and refresh.
+- About: version, UUID, supported Shell versions, license, and links.
 
 Enable switches apply after the extension is re-enabled.
 
@@ -95,9 +103,10 @@ extension/              packaged extension source
   metadata.json         UUID, shell version, settings schema
   schemas/              GSettings schema
   src/core/             context, registry, logger, scoped ownership
+  src/core/presets.js   preset data, export/import, reset, reload request
   src/modules/panel/    panel geometry and panel module
   src/modules/dock/     dock layout, visibility, icons, module
-  src/modules/desktop/  DING, focus mode, Show Desktop
+  src/modules/desktop/  DING, focus mode, Show Desktop, notification mute, Caffeine, window controls
   src/modules/lockscreen/  unlock-dialog clock, date, message, wallpaper
   src/modules/visual/      blur controller and panel/dock/overview blur module
   src/modules/tiling/      snap geometry and keyboard tiling module
@@ -129,6 +138,17 @@ The Phase 5 implementation plan is in `docs/superpowers/plans/2026-11-04-phase-5
 - The preference shortcut rows are display-only.
 - Live Wayland verification is still manual.
 - On Wayland, a freshly installed or updated extension only loads after logout and login; enabling it in the running session reports that it does not exist.
+
+## Phase 6 limits
+
+- Presets apply a complete settings snapshot. Applying a preset restarts enabled modules, so the panel and dock may briefly flicker.
+- Export excludes diagnostics history and internal request counters.
+- Import skips unknown or wrong-typed keys and reports the count.
+- Full reset keeps user presets.
+- The workspace indicator is a label only. Workspace thumbnails and preview popups are not implemented.
+- Caffeine inhibits idle and suspend. It does not inhibit logout, user switching, or automount.
+- macOS window controls only reorder the standard window buttons. They do not restyle window decorations.
+- Live Wayland verification remains manual.
 
 ## License
 

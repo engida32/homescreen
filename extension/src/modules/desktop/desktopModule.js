@@ -4,11 +4,23 @@ import Shell from 'gi://Shell';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
+import {CaffeineInhibitor} from './caffeine.js';
 import {hideDingIcons, restoreDing, snapshotDing} from './ding.js';
+import {
+    restoreBooleanIfApplied,
+    restoreStringIfApplied,
+    snapshotBoolean,
+    snapshotString,
+} from './externalState.js';
 
 const DING_SCHEMA = 'org.gnome.shell.extensions.ding';
 const SHORTCUT_KEY = 'desktop-show-desktop-shortcut';
 const ACTION_MODE = Shell.ActionMode.NORMAL;
+const NOTIFICATIONS_SCHEMA = 'org.gnome.desktop.notifications';
+const NOTIFICATIONS_KEY = 'show-banners';
+const WM_PREFERENCES_SCHEMA = 'org.gnome.desktop.wm.preferences';
+const BUTTON_LAYOUT_KEY = 'button-layout';
+const MACOS_BUTTON_LAYOUT = 'appmenu:close,minimize,maximize';
 
 export class DesktopModule {
     constructor() {
@@ -17,6 +29,13 @@ export class DesktopModule {
         this._context = null;
         this._ding = null;
         this._dingSnapshot = null;
+        this._notifications = null;
+        this._notificationsSnapshot = null;
+        this._notificationsApplied = false;
+        this._wmPreferences = null;
+        this._buttonLayoutSnapshot = null;
+        this._buttonLayoutApplied = false;
+        this._caffeine = null;
         this._desktopWindows = [];
         this._keybindingBound = false;
     }
@@ -33,15 +52,52 @@ export class DesktopModule {
                 this._applyIcons();
             }
 
+            this._notifications = this._findSettings(NOTIFICATIONS_SCHEMA);
+            this._notificationsSnapshot = this._notifications
+                ? snapshotBoolean(this._notifications, NOTIFICATIONS_KEY)
+                : null;
+            this._wmPreferences = this._findSettings(WM_PREFERENCES_SCHEMA);
+            this._buttonLayoutSnapshot = this._wmPreferences
+                ? snapshotString(this._wmPreferences, BUTTON_LAYOUT_KEY)
+                : null;
+            this._caffeine = new CaffeineInhibitor(
+                (method, params) => this._callSessionManager(method, params),
+                {
+                    appId: 'homescreen@engida32.github.io',
+                    reason: 'Homescreen presentation mode',
+                });
+
             this._scope.signal(this._settings, 'changed::desktop-hide-icons', () => this._applyIcons());
             this._scope.signal(this._settings, 'changed::desktop-focus-mode', () => this._applyFocusMode());
             this._scope.signal(this._settings, 'changed::desktop-show-desktop-shortcut', () => this._rebindShortcut());
+            this._scope.signal(this._settings,
+                'changed::desktop-mute-notifications',
+                () => this._applyNotifications());
+            this._scope.signal(this._settings,
+                'changed::desktop-caffeine',
+                () => this._applyCaffeine());
+            this._scope.signal(this._settings,
+                'changed::desktop-macos-controls',
+                () => this._applyWindowControls());
 
             this._bindShortcut();
             this._applyFocusMode();
+            this._applyNotifications();
+            this._applyCaffeine();
+            this._applyWindowControls();
         } catch (error) {
             this._teardown();
             throw error;
+        }
+    }
+
+    _findSettings(schemaId) {
+        try {
+            const source = Gio.SettingsSchemaSource.get_default();
+            const schema = source.lookup(schemaId, true);
+            return schema ? new Gio.Settings({settings_schema: schema}) : null;
+        } catch {
+            return null;
         }
     }
 
@@ -52,6 +108,69 @@ export class DesktopModule {
             return schema ? new Gio.Settings({settings_schema: schema}) : null;
         } catch {
             return null;
+        }
+    }
+
+    _callSessionManager(method, params) {
+        return new Promise((resolve, reject) => {
+            Gio.DBus.session.call(
+                'org.gnome.SessionManager',
+                '/org/gnome/SessionManager',
+                'org.gnome.SessionManager',
+                method,
+                params,
+                null,
+                Gio.DBusCallFlags.NONE,
+                -1,
+                null,
+                (connection, result) => {
+                    try {
+                        const reply = connection.call_finish(result);
+                        resolve(reply.deepUnpack()[0]);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+        });
+    }
+
+    _applyNotifications() {
+        if (!this._notifications || this._notificationsSnapshot === null)
+            return;
+        if (this._settings.get_boolean('desktop-mute-notifications')) {
+            this._notifications.set_boolean(NOTIFICATIONS_KEY, false);
+            this._notificationsApplied = true;
+        } else {
+            restoreBooleanIfApplied(this._notifications, NOTIFICATIONS_KEY,
+                this._notificationsApplied, false, this._notificationsSnapshot);
+            this._notificationsApplied = false;
+        }
+    }
+
+    _applyCaffeine() {
+        if (!this._caffeine)
+            return;
+        if (this._settings.get_boolean('desktop-caffeine')) {
+            this._caffeine.inhibit().catch(error =>
+                this._context?.logger.error('caffeine inhibit failed', error));
+        } else {
+            this._caffeine.release().catch(error =>
+                this._context?.logger.error('caffeine release failed', error));
+        }
+    }
+
+    _applyWindowControls() {
+        if (!this._wmPreferences || this._buttonLayoutSnapshot === null)
+            return;
+        if (this._settings.get_boolean('desktop-macos-controls')) {
+            this._wmPreferences.set_string(BUTTON_LAYOUT_KEY,
+                MACOS_BUTTON_LAYOUT);
+            this._buttonLayoutApplied = true;
+        } else {
+            restoreStringIfApplied(this._wmPreferences, BUTTON_LAYOUT_KEY,
+                this._buttonLayoutApplied, MACOS_BUTTON_LAYOUT,
+                this._buttonLayoutSnapshot);
+            this._buttonLayoutApplied = false;
         }
     }
 
@@ -131,6 +250,33 @@ export class DesktopModule {
             // Best-effort cleanup.
         }
 
+        if (this._notificationsApplied && this._notifications &&
+            this._notificationsSnapshot !== null) {
+            try {
+                restoreBooleanIfApplied(this._notifications,
+                    NOTIFICATIONS_KEY, this._notificationsApplied, false,
+                    this._notificationsSnapshot);
+            } catch {
+                // Best-effort cleanup.
+            }
+        }
+        this._notificationsApplied = false;
+
+        if (this._buttonLayoutApplied && this._wmPreferences &&
+            this._buttonLayoutSnapshot !== null) {
+            try {
+                restoreStringIfApplied(this._wmPreferences,
+                    BUTTON_LAYOUT_KEY, this._buttonLayoutApplied,
+                    MACOS_BUTTON_LAYOUT, this._buttonLayoutSnapshot);
+            } catch {
+                // Best-effort cleanup.
+            }
+        }
+        this._buttonLayoutApplied = false;
+
+        this._caffeine?.release().catch(error =>
+            this._context?.logger.error('caffeine release failed', error));
+
         if (this._ding && this._dingSnapshot) {
             try {
                 restoreDing(this._ding, this._dingSnapshot);
@@ -140,6 +286,11 @@ export class DesktopModule {
         }
 
         this._desktopWindows = [];
+        this._notifications = null;
+        this._notificationsSnapshot = null;
+        this._wmPreferences = null;
+        this._buttonLayoutSnapshot = null;
+        this._caffeine = null;
         this._context = null;
         this._ding = null;
         this._dingSnapshot = null;

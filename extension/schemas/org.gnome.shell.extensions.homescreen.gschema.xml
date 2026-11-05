@@ -8,6 +8,12 @@
       <summary>Enable the panel module</summary>
     </key>
     <key name="panel-mode" type="s">
+      <choices>
+        <choice value='always'/>
+        <choice value='autohide'/>
+        <choice value='intellihide'/>
+        <choice value='hidden'/>
+      </choices>
       <default>'autohide'</default>
       <summary>Panel visibility mode</summary>
       <description>One of always, autohide, intellihide, hidden.</description>
@@ -43,6 +49,10 @@
     <key name="panel-toggle-shortcut" type="as">
       <default>[]</default>
       <summary>Panel toggle shortcut</summary>
+    </key>
+    <key name="panel-show-workspace-indicator" type="b">
+      <default>false</default>
+      <summary>Show the workspace indicator in the panel</summary>
     </key>
 
     <key name="dock-enabled" type="b">
@@ -127,6 +137,18 @@
     <key name="desktop-show-desktop-shortcut" type="as">
       <default>[]</default>
       <summary>Show desktop shortcut</summary>
+    </key>
+    <key name="desktop-mute-notifications" type="b">
+      <default>false</default>
+      <summary>Mute notification banners while enabled</summary>
+    </key>
+    <key name="desktop-caffeine" type="b">
+      <default>false</default>
+      <summary>Inhibit idle and suspend while enabled</summary>
+    </key>
+    <key name="desktop-macos-controls" type="b">
+      <default>false</default>
+      <summary>Use macOS window button order</summary>
     </key>
 
     <key name="lockscreen-enabled" type="b">
@@ -288,6 +310,18 @@
     <key name="diagnostics-json" type="s">
       <default>'{}'</default>
       <summary>Last module status snapshot</summary>
+    </key>
+    <key name="user-presets-json" type="s">
+      <default>'[]'</default>
+      <summary>User presets as JSON</summary>
+    </key>
+    <key name="reload-request" type="i">
+      <default>0</default>
+      <summary>Internal module reload counter</summary>
+    </key>
+    <key name="diagnostics-request" type="i">
+      <default>0</default>
+      <summary>Internal diagnostics refresh counter</summary>
     </key>
   </schema>
 </schemalist>

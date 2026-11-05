@@ -2,6 +2,8 @@ import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import Gtk from 'gi://Gtk';
 
+import {resetModule} from '../core/presets.js';
+
 export function switchRow(settings, key, title, subtitle = '') {
     const row = new Adw.SwitchRow({title, subtitle});
     settings.bind(key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -103,5 +105,20 @@ export function textRow(settings, key, title, subtitle = '') {
         if (row.text !== value)
             row.text = value;
     });
+    return row;
+}
+
+export function resetRow(settings, moduleId) {
+    const row = new Adw.ActionRow({
+        title: 'Reset this page',
+        subtitle: 'Restore this page to its defaults.',
+    });
+    const button = new Gtk.Button({
+        label: 'Reset',
+        valign: Gtk.Align.CENTER,
+    });
+    button.add_css_class('destructive-action');
+    button.connect('clicked', () => resetModule(settings, moduleId));
+    row.add_suffix(button);
     return row;
 }

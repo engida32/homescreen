@@ -1,6 +1,6 @@
 import Adw from 'gi://Adw';
 
-import {switchRow, textRow} from './helpers.js';
+import {resetRow, switchRow, textRow} from './helpers.js';
 
 export function buildLockscreenPage(window, settings) {
     const page = new Adw.PreferencesPage({
@@ -27,6 +27,10 @@ export function buildLockscreenPage(window, settings) {
     page.add(background);
     background.add(textRow(settings, 'lockscreen-wallpaper-uri', 'Wallpaper URI',
         'Optional file:// URI. Empty uses the current wallpaper.'));
+
+    const reset = new Adw.PreferencesGroup({title: 'Reset'});
+    page.add(reset);
+    reset.add(resetRow(settings, 'lockscreen'));
 
     return page;
 }

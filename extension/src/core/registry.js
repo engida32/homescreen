@@ -22,6 +22,11 @@ export class ModuleRegistry {
             this._enable(entry);
     }
 
+    reload() {
+        this.disableAll();
+        this.enableAll();
+    }
+
     sync() {
         const mode = this._context.currentMode;
 

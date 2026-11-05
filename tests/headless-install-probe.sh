@@ -30,6 +30,26 @@ test -f "$EXT_DIR/extension.js"
 test -f "$EXT_DIR/LICENSE"
 test -f "$EXT_DIR/schemas/org.gnome.shell.extensions.homescreen.gschema.xml"
 
+SCHEMA="$EXT_DIR/schemas/org.gnome.shell.extensions.homescreen.gschema.xml"
+for key in \
+    panel-show-workspace-indicator \
+    desktop-mute-notifications \
+    desktop-caffeine \
+    desktop-macos-controls \
+    user-presets-json \
+    reload-request \
+    diagnostics-request; do
+    grep -Fq "name=\"$key\"" "$SCHEMA"
+done
+
+for file in \
+    src/core/presets.js \
+    src/prefs/presetsPage.js \
+    src/prefs/diagnosticsPage.js \
+    src/prefs/aboutPage.js; do
+    test -f "$EXT_DIR/$file"
+done
+
 rm -rf "$EXT_DIR"
 
 test ! -e "$EXT_DIR"

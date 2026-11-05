@@ -1,6 +1,6 @@
 import Adw from 'gi://Adw';
 
-import {comboRow, shortcutRow, spinRow, spinRowDouble, switchRow} from './helpers.js';
+import {comboRow, resetRow, shortcutRow, spinRow, spinRowDouble, switchRow} from './helpers.js';
 
 export function buildPanelPage(window, settings) {
     const page = new Adw.PreferencesPage({
@@ -41,6 +41,12 @@ export function buildPanelPage(window, settings) {
         'Show in overview', 'Keep the panel visible while the overview is open.'));
     overview.add(switchRow(settings, 'panel-show-fullscreen',
         'Show over fullscreen', 'Allow the panel to reveal over fullscreen windows.'));
+    overview.add(switchRow(settings, 'panel-show-workspace-indicator',
+        'Workspace indicator', 'Show the current workspace number in the panel.'));
+
+    const reset = new Adw.PreferencesGroup({title: 'Reset'});
+    page.add(reset);
+    reset.add(resetRow(settings, 'panel'));
 
     return page;
 }

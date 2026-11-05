@@ -1,7 +1,7 @@
 import Adw from 'gi://Adw';
 
 import {createConflictBanner, revealIfEnabled} from './conflicts.js';
-import {shortcutRow, spinRow, switchRow} from './helpers.js';
+import {resetRow, shortcutRow, spinRow, switchRow} from './helpers.js';
 
 export function buildTilingPage(window, settings) {
     const page = new Adw.PreferencesPage({
@@ -49,6 +49,10 @@ export function buildTilingPage(window, settings) {
         'Bottom-right quarter'));
     shortcuts.add(shortcutRow(settings, 'tiling-full-shortcut',
         'Full work area'));
+
+    const reset = new Adw.PreferencesGroup({title: 'Reset'});
+    page.add(reset);
+    reset.add(resetRow(settings, 'tiling'));
 
     return page;
 }

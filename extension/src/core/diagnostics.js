@@ -3,6 +3,7 @@ export class Diagnostics {
         this._settings = settings;
         this._logger = logger;
         this._modules = new Map();
+        this._resources = {};
     }
 
     setModule(id, status, detail = '') {
@@ -10,9 +11,15 @@ export class Diagnostics {
         this._write();
     }
 
+    refresh(resources) {
+        this._resources = resources;
+        this._write();
+    }
+
     snapshot() {
         return {
             modules: Object.fromEntries(this._modules),
+            resources: this._resources,
             log: this._logger.entries().slice(-20),
         };
     }
