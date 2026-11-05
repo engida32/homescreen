@@ -37,6 +37,17 @@ export class Context {
         return this._modules.get(id) ?? null;
     }
 
+    resourceCounts() {
+        const counts = {};
+        for (const scope of this._scopes) {
+            counts[scope.name] = {
+                signals: scope.signalCount,
+                sources: scope.sourceCount,
+            };
+        }
+        return counts;
+    }
+
     snapshot() {
         return this.diagnostics.snapshot();
     }
