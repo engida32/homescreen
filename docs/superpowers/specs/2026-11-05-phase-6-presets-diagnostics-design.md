@@ -52,7 +52,8 @@ plain GJS.
 Public API:
 
 - `INTERNAL_KEYS`: keys excluded from export and user preset snapshots.
-- `BUILTIN_PRESETS`: ordered list of `{id, name, description, settings}`.
+- `BUILTIN_PRESETS`: ordered definitions of `{id, name, description, overrides}`.
+- `builtinPresets(settings)`: resolved presets with full `settings` maps.
 - `MODULE_KEYS`: module id to user-facing setting keys.
 - `snapshotSettings(settings)`: object of every non-internal key and its
   unpacked value.
