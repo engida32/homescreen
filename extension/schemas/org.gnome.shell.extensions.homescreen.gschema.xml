@@ -8,6 +8,12 @@
       <summary>Enable the panel module</summary>
     </key>
     <key name="panel-mode" type="s">
+      <choices>
+        <choice value='always'/>
+        <choice value='autohide'/>
+        <choice value='intellihide'/>
+        <choice value='hidden'/>
+      </choices>
       <default>'autohide'</default>
       <summary>Panel visibility mode</summary>
       <description>One of always, autohide, intellihide, hidden.</description>

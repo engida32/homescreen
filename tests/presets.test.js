@@ -3,6 +3,7 @@ import Gio from 'gi://Gio';
 import {assert, assertEqual} from './helpers.js';
 import {
     INTERNAL_KEYS,
+    MODULE_KEYS,
     applyImport,
     applyPreset,
     builtinPresets,
@@ -32,6 +33,10 @@ function userKeys() {
 }
 
 resetSettings();
+
+const moduleKeys = [...new Set(Object.values(MODULE_KEYS).flat())].sort();
+assertEqual(moduleKeys.join(','), userKeys().join(','),
+    'module keys cover every user-facing key');
 
 const presets = builtinPresets(settings);
 assertEqual(presets.length, 5, 'five built-in presets');

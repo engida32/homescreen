@@ -1,6 +1,8 @@
 import {assertEqual, waitFor} from './helpers.js';
 import {
+    restoreBooleanIfApplied,
     restoreBooleanIfUnchanged,
+    restoreStringIfApplied,
     restoreStringIfUnchanged,
     snapshotBoolean,
     snapshotString,
@@ -49,6 +51,43 @@ restoreStringIfUnchanged(wm, 'button-layout',
     'appmenu:close,minimize,maximize', layoutSnapshot);
 assertEqual(wm.get_string('button-layout'),
     'appmenu:minimize,maximize,close', 'layout restored');
+
+const notAppliedBool = new FakeSettings({'show-banners': false});
+restoreBooleanIfApplied(notAppliedBool, 'show-banners', false, false, true);
+assertEqual(notAppliedBool.get_boolean('show-banners'), false,
+    'not applied boolean not written');
+
+const appliedBool = new FakeSettings({'show-banners': false});
+restoreBooleanIfApplied(appliedBool, 'show-banners', true, false, true);
+assertEqual(appliedBool.get_boolean('show-banners'), true,
+    'applied boolean restored');
+
+const userChangedBool = new FakeSettings({'show-banners': true});
+restoreBooleanIfApplied(userChangedBool, 'show-banners', true, false, false);
+assertEqual(userChangedBool.get_boolean('show-banners'), true,
+    'user changed boolean kept');
+
+const notAppliedString = new FakeSettings({
+    'button-layout': 'appmenu:minimize,maximize,close',
+});
+restoreStringIfApplied(notAppliedString, 'button-layout', false,
+    'appmenu:close,minimize,maximize', 'appmenu:minimize,maximize,close');
+assertEqual(notAppliedString.get_string('button-layout'),
+    'appmenu:minimize,maximize,close', 'not applied string not written');
+
+const appliedString = new FakeSettings({
+    'button-layout': 'appmenu:close,minimize,maximize',
+});
+restoreStringIfApplied(appliedString, 'button-layout', true,
+    'appmenu:close,minimize,maximize', 'appmenu:minimize,maximize,close');
+assertEqual(appliedString.get_string('button-layout'),
+    'appmenu:minimize,maximize,close', 'applied string restored');
+
+const userChangedString = new FakeSettings({'button-layout': 'close:appmenu'});
+restoreStringIfApplied(userChangedString, 'button-layout', true,
+    'appmenu:close,minimize,maximize', 'appmenu:minimize,maximize,close');
+assertEqual(userChangedString.get_string('button-layout'), 'close:appmenu',
+    'user changed string kept');
 
 assertEqual(CAFFEINE_FLAGS, 12, 'caffeine flags');
 

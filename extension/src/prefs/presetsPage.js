@@ -1,5 +1,6 @@
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import Gtk from 'gi://Gtk';
 
 import {
@@ -54,15 +55,46 @@ function exportSettings(parent, settings, banner) {
         'Export Homescreen settings', 'Export').then(file => {
         if (!file)
             return;
+        const text = `${JSON.stringify(exportPayload(settings), null, 2)}\n`;
         try {
-            const text = `${JSON.stringify(exportPayload(settings), null, 2)}\n`;
-            file.replace_contents(new TextEncoder().encode(text), null, false,
-                Gio.FileCreateFlags.REPLACE_DESTINATION, null);
-            setBanner(banner, `Exported settings to ${file.get_basename()}.`);
+            file.replace_contents_async(
+                new TextEncoder().encode(text), null, false,
+                Gio.FileCreateFlags.REPLACE_DESTINATION, null,
+                (source, result) => {
+                    try {
+                        const [ok] = source.replace_contents_finish(result);
+                        if (!ok)
+                            throw new Error('file could not be written');
+                        setBanner(banner,
+                            `Exported settings to ${source.get_basename()}.`);
+                    } catch (error) {
+                        setBanner(banner,
+                            `Could not export: ${error.message}`);
+                    }
+                });
         } catch (error) {
             setBanner(banner, `Could not export: ${error.message}`);
         }
     });
+}
+
+function applyImportText(text, settings, banner, refresh) {
+    try {
+        const payload = JSON.parse(text);
+        const validated = validateImportPayload(payload, settings);
+        const result = applyImport(settings, validated);
+        const skipped = new Set([
+            ...validated.skipped,
+            ...result.skipped,
+        ]).size;
+        setBanner(banner,
+            `Imported ${result.applied} settings` +
+            `${skipped ? `, skipped ${skipped}` : ''}` +
+            `, ${result.importedPresets} presets.`);
+        refresh();
+    } catch (error) {
+        setBanner(banner, `Could not import: ${error.message}`);
+    }
 }
 
 function importSettings(parent, settings, banner, refresh) {
@@ -70,25 +102,33 @@ function importSettings(parent, settings, banner, refresh) {
         'Import Homescreen settings', 'Import').then(file => {
         if (!file)
             return;
-        try {
-            const [, bytes] = file.load_contents(null);
-            if (bytes.length > 1024 * 1024)
-                throw new Error('File is larger than 1 MiB');
-            const payload = JSON.parse(new TextDecoder().decode(bytes));
-            const validated = validateImportPayload(payload, settings);
-            const result = applyImport(settings, validated);
-            const skipped = new Set([
-                ...validated.skipped,
-                ...result.skipped,
-            ]).size;
-            setBanner(banner,
-                `Imported ${result.applied} settings` +
-                `${skipped ? `, skipped ${skipped}` : ''}` +
-                `, ${result.importedPresets} presets.`);
-            refresh();
-        } catch (error) {
-            setBanner(banner, `Could not import: ${error.message}`);
-        }
+        file.query_info_async('standard::size', Gio.FileQueryInfoFlags.NONE,
+            GLib.PRIORITY_DEFAULT, null, (source, result) => {
+                let info;
+                try {
+                    info = source.query_info_finish(result);
+                } catch (error) {
+                    setBanner(banner, `Could not import: ${error.message}`);
+                    return;
+                }
+                if (info.get_size() > 1024 * 1024) {
+                    setBanner(banner,
+                        'Could not import: File is larger than 1 MiB');
+                    return;
+                }
+                source.load_contents_async(null, (loaded, loadResult) => {
+                    try {
+                        const [ok, bytes] = loaded.load_contents_finish(loadResult);
+                        if (!ok)
+                            throw new Error('File could not be read');
+                        applyImportText(new TextDecoder().decode(bytes),
+                            settings, banner, refresh);
+                    } catch (error) {
+                        setBanner(banner,
+                            `Could not import: ${error.message}`);
+                    }
+                });
+            });
     });
 }
 

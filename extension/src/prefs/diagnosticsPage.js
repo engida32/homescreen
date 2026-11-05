@@ -16,6 +16,13 @@ function addRow(group, rows, title, subtitle) {
     rows.push(row);
 }
 
+function formatTime(value) {
+    const milliseconds = Number.isFinite(value) ? value : 0;
+    const dateTime = GLib.DateTime.new_from_unix_local(
+        Math.floor(milliseconds / 1000));
+    return dateTime ? dateTime.format('%H:%M:%S') : '--:--:--';
+}
+
 export function buildDiagnosticsPage(window, settings) {
     const page = new Adw.PreferencesPage({
         title: 'Diagnostics',
@@ -87,8 +94,7 @@ export function buildDiagnosticsPage(window, settings) {
             addRow(logGroup, logRows, 'No log entries', '');
         } else {
             for (const entry of entries) {
-                const time = GLib.DateTime.new_from_unix_local(
-                    Math.floor((entry.time ?? 0) / 1000)).format('%H:%M:%S');
+                const time = formatTime(entry.time);
                 addRow(logGroup, logRows, entry.level ?? 'info',
                     `${time} ${entry.message ?? ''}`);
             }

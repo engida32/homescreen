@@ -7,8 +7,8 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {CaffeineInhibitor} from './caffeine.js';
 import {hideDingIcons, restoreDing, snapshotDing} from './ding.js';
 import {
-    restoreBooleanIfUnchanged,
-    restoreStringIfUnchanged,
+    restoreBooleanIfApplied,
+    restoreStringIfApplied,
     snapshotBoolean,
     snapshotString,
 } from './externalState.js';
@@ -31,8 +31,10 @@ export class DesktopModule {
         this._dingSnapshot = null;
         this._notifications = null;
         this._notificationsSnapshot = null;
+        this._notificationsApplied = false;
         this._wmPreferences = null;
         this._buttonLayoutSnapshot = null;
+        this._buttonLayoutApplied = false;
         this._caffeine = null;
         this._desktopWindows = [];
         this._keybindingBound = false;
@@ -135,11 +137,14 @@ export class DesktopModule {
     _applyNotifications() {
         if (!this._notifications || this._notificationsSnapshot === null)
             return;
-        if (this._settings.get_boolean('desktop-mute-notifications'))
+        if (this._settings.get_boolean('desktop-mute-notifications')) {
             this._notifications.set_boolean(NOTIFICATIONS_KEY, false);
-        else
-            restoreBooleanIfUnchanged(this._notifications, NOTIFICATIONS_KEY,
-                false, this._notificationsSnapshot);
+            this._notificationsApplied = true;
+        } else {
+            restoreBooleanIfApplied(this._notifications, NOTIFICATIONS_KEY,
+                this._notificationsApplied, false, this._notificationsSnapshot);
+            this._notificationsApplied = false;
+        }
     }
 
     _applyCaffeine() {
@@ -157,12 +162,16 @@ export class DesktopModule {
     _applyWindowControls() {
         if (!this._wmPreferences || this._buttonLayoutSnapshot === null)
             return;
-        if (this._settings.get_boolean('desktop-macos-controls'))
+        if (this._settings.get_boolean('desktop-macos-controls')) {
             this._wmPreferences.set_string(BUTTON_LAYOUT_KEY,
                 MACOS_BUTTON_LAYOUT);
-        else
-            restoreStringIfUnchanged(this._wmPreferences, BUTTON_LAYOUT_KEY,
-                MACOS_BUTTON_LAYOUT, this._buttonLayoutSnapshot);
+            this._buttonLayoutApplied = true;
+        } else {
+            restoreStringIfApplied(this._wmPreferences, BUTTON_LAYOUT_KEY,
+                this._buttonLayoutApplied, MACOS_BUTTON_LAYOUT,
+                this._buttonLayoutSnapshot);
+            this._buttonLayoutApplied = false;
+        }
     }
 
     _applyIcons() {
@@ -241,24 +250,29 @@ export class DesktopModule {
             // Best-effort cleanup.
         }
 
-        if (this._notifications && this._notificationsSnapshot !== null) {
+        if (this._notificationsApplied && this._notifications &&
+            this._notificationsSnapshot !== null) {
             try {
-                restoreBooleanIfUnchanged(this._notifications,
-                    NOTIFICATIONS_KEY, false, this._notificationsSnapshot);
+                restoreBooleanIfApplied(this._notifications,
+                    NOTIFICATIONS_KEY, this._notificationsApplied, false,
+                    this._notificationsSnapshot);
             } catch {
                 // Best-effort cleanup.
             }
         }
+        this._notificationsApplied = false;
 
-        if (this._wmPreferences && this._buttonLayoutSnapshot !== null) {
+        if (this._buttonLayoutApplied && this._wmPreferences &&
+            this._buttonLayoutSnapshot !== null) {
             try {
-                restoreStringIfUnchanged(this._wmPreferences,
-                    BUTTON_LAYOUT_KEY, MACOS_BUTTON_LAYOUT,
-                    this._buttonLayoutSnapshot);
+                restoreStringIfApplied(this._wmPreferences,
+                    BUTTON_LAYOUT_KEY, this._buttonLayoutApplied,
+                    MACOS_BUTTON_LAYOUT, this._buttonLayoutSnapshot);
             } catch {
                 // Best-effort cleanup.
             }
         }
+        this._buttonLayoutApplied = false;
 
         this._caffeine?.release().catch(error =>
             this._context?.logger.error('caffeine release failed', error));
