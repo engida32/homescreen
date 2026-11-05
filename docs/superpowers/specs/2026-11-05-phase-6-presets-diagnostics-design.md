@@ -1,7 +1,7 @@
 # Phase 6: Presets, Diagnostics, and Packaging Design
 
 Date: 2026-11-05
-Status: Approved design, awaiting written-spec review
+Status: Approved design and written spec
 Target: Ubuntu 26.04, GNOME Shell 50.1, Wayland
 
 ## Goal
