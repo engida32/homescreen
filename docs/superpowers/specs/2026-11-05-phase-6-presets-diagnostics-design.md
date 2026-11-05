@@ -77,9 +77,12 @@ Public API:
 - `bumpReload(settings)`: increments `reload-request`.
 
 Value conversion uses `settings.get_value(key).deepUnpack()` for export.
-Import constructs a `GLib.Variant` from the schema key's default type and
-lets the constructor reject bad values. No value is written until every
-import value has passed validation.
+Import checks each value against the schema key's type, enum, and range
+before constructing a `GLib.Variant` and writing it. The variant
+constructor alone is not sufficient because it coerces some values, such
+as truncating a fractional integer and accepting an out-of-range number
+with only a warning. No value is written until every import value has
+passed validation.
 
 ### Reload path
 
@@ -239,7 +242,7 @@ Rules:
 - Import requires a JSON object with `version: 1`.
 - `settings` must be an object. Each key must exist in the schema and
   must not be internal.
-- A value that cannot construct the schema key's variant type is
+- A value that fails the explicit type, enum, or range check is
   skipped.
 - Unknown keys are skipped.
 - If `userPresets` is absent, existing user presets are preserved.
