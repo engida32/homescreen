@@ -1,5 +1,8 @@
 # Homescreen
 
+[![CI](https://github.com/engida32/homescreen/actions/workflows/ci.yml/badge.svg)](https://github.com/engida32/homescreen/actions/workflows/ci.yml)
+![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)
+
 A personal GNOME Shell extension that combines a hideable top panel, a floating dock, and a clean desktop in one codebase and one preferences window.
 
 Status: Phase 5 is implemented and tested headlessly. It is not published on extensions.gnome.org yet, and the live Wayland matrix is still pending.
